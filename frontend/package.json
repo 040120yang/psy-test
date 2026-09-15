@@ -1,0 +1,27 @@
+{
+  "name": "psy-test-ui",
+  "version": "1.0.0",
+  "private": true,
+  "description": "区域心理测试系统前端（Vue2 + Element UI，参照若依 RuoYi-Vue）",
+  "scripts": {
+    "dev": "vue-cli-service serve",
+    "build:prod": "vue-cli-service build"
+  },
+  "dependencies": {
+    "axios": "1.7.7",
+    "echarts": "5.5.0",
+    "element-ui": "2.15.14",
+    "js-cookie": "3.0.5",
+    "nprogress": "0.2.0",
+    "vue": "2.7.16",
+    "vue-router": "3.6.5"
+  },
+  "devDependencies": {
+    "@vue/cli-service": "5.0.8"
+  },
+  "browserslist": [
+    "> 1%",
+    "last 2 versions",
+    "not dead"
+  ]
+}

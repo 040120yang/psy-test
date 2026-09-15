@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.psy.business.mapper.PatientMapper">
+
+    <resultMap id="PatientResult" type="com.psy.business.domain.Patient">
+        <id     property="patientId"      column="patient_id"/>
+        <result property="userId"         column="user_id"/>
+        <result property="patientName"    column="patient_name"/>
+        <result property="sex"            column="sex"/>
+        <result property="age"            column="age"/>
+        <result property="phone"          column="phone"/>
+        <result property="idCard"         column="id_card"/>
+        <result property="address"        column="address"/>
+        <result property="medicalHistory" column="medical_history"/>
+        <result property="createTime"     column="create_time"/>
+        <result property="updateTime"     column="update_time"/>
+        <result property="username"       column="username"/>
+    </resultMap>
+
+    <sql id="selectPatientVo">
+        select pp.*, su.username
+        from psy_patient pp
+        left join sys_user su on pp.user_id = su.user_id
+    </sql>
+
+    <select id="selectPatientList" parameterType="com.psy.business.domain.Patient" resultMap="PatientResult">
+        <include refid="selectPatientVo"/>
+        <where>
+            <if test="patient.patientName != null and patient.patientName != ''">
+                AND pp.patient_name like concat('%', #{patient.patientName}, '%')
+            </if>
+            <if test="patient.phone != null and patient.phone != ''">
+                AND pp.phone like concat('%', #{patient.phone}, '%')
+            </if>
+            <if test="patient.userId != null">
+                AND pp.user_id = #{patient.userId}
+            </if>
+        </where>
+        order by pp.patient_id
+    </select>
+
+    <insert id="insertPatient" parameterType="com.psy.business.domain.Patient" useGeneratedKeys="true" keyProperty="patientId">
+        insert into psy_patient (user_id, patient_name, sex, age, phone, id_card, address, medical_history)
+        values (#{userId}, #{patientName}, #{sex}, #{age}, #{phone}, #{idCard}, #{address}, #{medicalHistory})
+    </insert>
+
+    <update id="updatePatient" parameterType="com.psy.business.domain.Patient">
+        update psy_patient
+        <set>
+            <if test="userId != null">user_id = #{userId},</if>
+            <if test="patientName != null">patient_name = #{patientName},</if>
+            <if test="sex != null">sex = #{sex},</if>
+            <if test="age != null">age = #{age},</if>
+            <if test="phone != null">phone = #{phone},</if>
+            <if test="idCard != null">id_card = #{idCard},</if>
+            <if test="address != null">address = #{address},</if>
+            <if test="medicalHistory != null">medical_history = #{medicalHistory},</if>
+        </set>
+        where patient_id = #{patientId}
+    </update>
+</mapper>

@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.psy.business.mapper.TestRecordMapper">
+
+    <resultMap id="TestRecordResult" type="com.psy.business.domain.TestRecord">
+        <id     property="recordId"     column="record_id"/>
+        <result property="userId"       column="user_id"/>
+        <result property="scaleId"      column="scale_id"/>
+        <result property="rawScore"     column="raw_score"/>
+        <result property="stdScore"     column="std_score"/>
+        <result property="level"        column="level"/>
+        <result property="suggestion"   column="suggestion"/>
+        <result property="status"       column="status"/>
+        <result property="createTime"   column="create_time"/>
+        <result property="scaleName"    column="scale_name"/>
+        <result property="scaleCode"    column="scale_code"/>
+        <result property="nickname"     column="nickname"/>
+        <result property="username"     column="username"/>
+    </resultMap>
+
+    <sql id="selectRecordVo">
+        select tr.*, ps.scale_name, ps.scale_code, su.nickname, su.username
+        from psy_test_record tr
+        left join psy_scale ps on tr.scale_id = ps.scale_id
+        left join sys_user su on tr.user_id = su.user_id
+    </sql>
+
+    <insert id="insertRecord" parameterType="com.psy.business.domain.TestRecord" useGeneratedKeys="true" keyProperty="recordId">
+        insert into psy_test_record (user_id, scale_id, raw_score, std_score, level, suggestion, status)
+        values (#{userId}, #{scaleId}, #{rawScore}, #{stdScore}, #{level}, #{suggestion}, #{status})
+    </insert>
+
+    <select id="selectMyRecords" parameterType="Long" resultMap="TestRecordResult">
+        <include refid="selectRecordVo"/>
+        where tr.user_id = #{userId}
+        order by tr.create_time desc
+    </select>
+
+    <select id="selectAllRecords" parameterType="com.psy.business.domain.TestRecord" resultMap="TestRecordResult">
+        <include refid="selectRecordVo"/>
+        <where>
+            <if test="record.scaleId != null">
+                AND tr.scale_id = #{record.scaleId}
+            </if>
+            <if test="record.level != null and record.level != ''">
+                AND tr.level like concat('%', #{record.level}, '%')
+            </if>
+            <if test="record.username != null and record.username != ''">
+                AND su.username like concat('%', #{record.username}, '%')
+            </if>
+            <if test="record.scaleName != null and record.scaleName != ''">
+                AND ps.scale_name like concat('%', #{record.scaleName}, '%')
+            </if>
+        </where>
+        order by tr.create_time desc
+    </select>
+</mapper>

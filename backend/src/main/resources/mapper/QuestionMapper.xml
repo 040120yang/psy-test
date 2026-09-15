@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.psy.business.mapper.QuestionMapper">
+
+    <resultMap id="QuestionResult" type="com.psy.business.domain.Question">
+        <id     property="questionId"   column="question_id"/>
+        <result property="scaleId"      column="scale_id"/>
+        <result property="sortNo"       column="sort_no"/>
+        <result property="content"      column="content"/>
+        <result property="reverseFlag"  column="reverse_flag"/>
+        <result property="scaleName"    column="scale_name"/>
+        <result property="createTime"   column="create_time"/>
+    </resultMap>
+
+    <select id="selectQuestionList" parameterType="com.psy.business.domain.Question" resultMap="QuestionResult">
+        select q.*, ps.scale_name
+        from psy_question q
+        left join psy_scale ps on q.scale_id = ps.scale_id
+        <where>
+            <if test="question.scaleId != null">
+                AND q.scale_id = #{question.scaleId}
+            </if>
+            <if test="question.content != null and question.content != ''">
+                AND q.content like concat('%', #{question.content}, '%')
+            </if>
+        </where>
+        order by q.scale_id, q.sort_no
+    </select>
+
+    <insert id="insertQuestion" parameterType="com.psy.business.domain.Question" useGeneratedKeys="true" keyProperty="questionId">
+        insert into psy_question (scale_id, sort_no, content, reverse_flag)
+        values (#{scaleId}, #{sortNo}, #{content}, #{reverseFlag})
+    </insert>
+
+    <update id="updateQuestion" parameterType="com.psy.business.domain.Question">
+        update psy_question
+        <set>
+            <if test="scaleId != null">scale_id = #{scaleId},</if>
+            <if test="sortNo != null">sort_no = #{sortNo},</if>
+            <if test="content != null">content = #{content},</if>
+            <if test="reverseFlag != null">reverse_flag = #{reverseFlag},</if>
+        </set>
+        where question_id = #{questionId}
+    </update>
+</mapper>
