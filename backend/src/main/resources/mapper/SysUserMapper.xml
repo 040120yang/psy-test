@@ -7,6 +7,7 @@
         <result property="username"  column="username"/>
         <result property="password"  column="password"/>
         <result property="nickname"  column="nickname"/>
+        <result property="avatar"    column="avatar"/>
         <result property="roleId"    column="role_id"/>
         <result property="roleName"  column="role_name"/>
         <result property="sex"       column="sex"/>
@@ -20,7 +21,7 @@
     </resultMap>
 
     <sql id="selectUserVo">
-        select su.user_id, su.username, su.password, su.nickname, su.role_id, sr.role_name,
+        select su.user_id, su.username, su.password, su.nickname, su.avatar, su.role_id, sr.role_name,
                su.sex, su.age, su.phone, su.status, su.del_flag, su.create_time, su.update_time, su.remark
         from sys_user su
         left join sys_role sr on su.role_id = sr.role_id
@@ -47,8 +48,8 @@
     </select>
 
     <insert id="insertUser" parameterType="com.psy.system.domain.SysUser" useGeneratedKeys="true" keyProperty="userId">
-        insert into sys_user (username, password, nickname, role_id, sex, age, phone, status, remark)
-        values (#{username}, #{password}, #{nickname}, #{roleId}, #{sex}, #{age}, #{phone}, #{status}, #{remark})
+        insert into sys_user (username, password, nickname, avatar, role_id, sex, age, phone, status, remark)
+        values (#{username}, #{password}, #{nickname}, #{avatar}, #{roleId}, #{sex}, #{age}, #{phone}, #{status}, #{remark})
     </insert>
 
     <update id="updateUser" parameterType="com.psy.system.domain.SysUser">
@@ -57,6 +58,7 @@
             <if test="username != null">username = #{username},</if>
             <if test="password != null and password != ''">password = #{password},</if>
             <if test="nickname != null">nickname = #{nickname},</if>
+            <if test="avatar != null">avatar = #{avatar},</if>
             <if test="roleId != null">role_id = #{roleId},</if>
             <if test="sex != null">sex = #{sex},</if>
             <if test="age != null">age = #{age},</if>

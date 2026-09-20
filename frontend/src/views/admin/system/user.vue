@@ -15,6 +15,14 @@
 
       <el-table :data="users" border v-loading="loading">
         <el-table-column prop="userId" label="ID" width="60" align="center" />
+        <el-table-column label="头像" width="80" align="center">
+          <template slot-scope="scope">
+            <img v-if="scope.row.avatar" :src="scope.row.avatar" class="table-avatar" alt="头像" />
+            <div v-else class="table-avatar table-avatar-placeholder">
+              {{ (scope.row.nickname || scope.row.username || 'U').charAt(0).toUpperCase() }}
+            </div>
+          </template>
+        </el-table-column>
         <el-table-column prop="username" label="用户名" width="120" />
         <el-table-column prop="nickname" label="昵称" width="120" />
         <el-table-column prop="roleName" label="角色" width="120" align="center" />
@@ -54,6 +62,21 @@
     <!-- 新增/编辑 -->
     <el-dialog :title="form.userId ? '编辑用户' : '新增用户'" :visible.sync="dialogVisible" width="520px">
       <el-form ref="userForm" :model="form" :rules="rules" label-width="90px">
+        <el-form-item label="头像">
+          <el-upload
+            class="avatar-uploader"
+            action=""
+            :show-file-list="false"
+            :before-upload="beforeAvatarUpload"
+            accept="image/*"
+          >
+            <img v-if="form.avatar" :src="form.avatar" class="form-avatar" alt="头像" />
+            <div v-else class="form-avatar form-avatar-placeholder">
+              <i class="el-icon-plus"></i>
+            </div>
+          </el-upload>
+          <div class="avatar-tip">点击上传，建议正方形图片</div>
+        </el-form-item>
         <el-form-item label="用户名" prop="username">
           <el-input v-model="form.username" :disabled="!!form.userId" placeholder="登录账号" />
         </el-form-item>
@@ -120,6 +143,9 @@ export default {
       roles: [],
       total: 0,
       loading: false,
+      cropVisible: false,
+      cropImg: '',
+      cropper: null,
       query: { pageNum: 1, pageSize: 10, username: '', nickname: '', roleId: null },
       dialogVisible: false,
       pwdDialogVisible: false,
@@ -149,6 +175,36 @@ export default {
     openDialog(row) {
       this.form = row ? { ...row, password: '' } : { sex: '2', status: '0', age: 20 }
       this.dialogVisible = true
+    },
+    beforeAvatarUpload(file) {
+      if (file.type.indexOf('image/') !== 0) {
+        this.$message.error('只能上传图片文件')
+        return false
+      }
+      if (file.size / 1024 / 1024 > 5) {
+        this.$message.error('图片不能超过 5MB')
+        return false
+      }
+      const reader = new FileReader()
+      reader.onload = (e) => {
+        const img = new Image()
+        img.onload = () => {
+          const size = Math.min(img.width, img.height)
+          const x = (img.width - size) / 2
+          const y = (img.height - size) / 2
+          const canvas = document.createElement('canvas')
+          canvas.width = 200
+          canvas.height = 200
+          const ctx = canvas.getContext('2d')
+          ctx.drawImage(img, x, y, size, size, 0, 0, 200, 200)
+          const base64 = canvas.toDataURL('image/png')
+          this.$set(this.form, 'avatar', base64)
+          this.$message.success('头像已选择，保存后生效')
+        }
+        img.src = e.target.result
+      }
+      reader.readAsDataURL(file)
+      return false
     },
     handleSave() {
       this.$refs.userForm.validate(valid => {
@@ -206,5 +262,49 @@ export default {
 .pagination {
   margin-top: 16px;
   text-align: right;
+}
+.table-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  object-fit: cover;
+  display: inline-block;
+}
+.table-avatar-placeholder {
+  background: linear-gradient(120deg, #667eea, #764ba2);
+  color: #fff;
+  font-size: 16px;
+  line-height: 36px;
+  text-align: center;
+}
+.avatar-uploader .el-upload {
+  border: 1px dashed #d9d9d9;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.form-avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 6px;
+  object-fit: cover;
+  display: block;
+}
+.form-avatar-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #8c939d;
+  font-size: 24px;
+  background: #fbfdff;
+}
+.avatar-tip {
+  margin-left: 12px;
+  font-size: 12px;
+  color: #909399;
+  display: inline-block;
+}
+.cropper-wrapper {
+  width: 100%;
+  height: 360px;
 }
 </style>

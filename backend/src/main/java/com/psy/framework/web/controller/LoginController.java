@@ -2,6 +2,7 @@ package com.psy.framework.web.controller;
 
 import com.psy.common.core.AjaxResult;
 import com.psy.common.exception.ServiceException;
+import com.psy.common.utils.StringUtils;
 import com.psy.framework.security.LoginUser;
 import com.psy.framework.security.SecurityUtils;
 import com.psy.framework.security.TokenService;
@@ -11,6 +12,7 @@ import com.psy.system.mapper.SysUserMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -80,6 +82,52 @@ public class LoginController {
         loginService.register(registerBody.getUsername(), registerBody.getPassword(),
                 registerBody.getNickname(), registerBody.getSex(), registerBody.getAge(), registerBody.getPhone());
         return AjaxResult.success("注册成功");
+    }
+
+    /**
+     * 个人中心-修改当前登录用户资料（昵称/性别/年龄/手机号）
+     */
+    @PutMapping("/user/profile")
+    public AjaxResult updateProfile(@RequestBody SysUser body) {
+        Long userId = SecurityUtils.getUserId();
+        String phone = body.getPhone();
+        if (StringUtils.isNotEmpty(phone) && !phone.matches("^1[3-9]\\d{9}$")) {
+            throw new ServiceException("手机号格式不正确，请输入11位手机号");
+        }
+        SysUser update = new SysUser();
+        update.setUserId(userId);
+        update.setNickname(body.getNickname());
+        update.setAvatar(body.getAvatar());
+        update.setSex(body.getSex());
+        update.setAge(body.getAge());
+        update.setPhone(phone);
+        userMapper.updateUser(update);
+        return AjaxResult.success("资料修改成功");
+    }
+
+    /**
+     * 个人中心-修改当前登录用户密码（校验原密码）
+     */
+    @PutMapping("/user/profile/updatePwd")
+    public AjaxResult updatePwd(@RequestBody Map<String, String> body) {
+        Long userId = SecurityUtils.getUserId();
+        String oldPassword = body.get("oldPassword");
+        String newPassword = body.get("newPassword");
+        if (StringUtils.isEmpty(oldPassword) || StringUtils.isEmpty(newPassword)) {
+            throw new ServiceException("原密码和新密码不能为空");
+        }
+        SysUser user = userMapper.selectUserById(userId);
+        if (user == null || !SecurityUtils.matchesPassword(oldPassword, user.getPassword())) {
+            throw new ServiceException("原密码错误");
+        }
+        if (newPassword.length() < 6) {
+            throw new ServiceException("新密码长度不能少于6位");
+        }
+        SysUser update = new SysUser();
+        update.setUserId(userId);
+        update.setPassword(SecurityUtils.encryptPassword(newPassword));
+        userMapper.updateUser(update);
+        return AjaxResult.success("密码修改成功");
     }
 
     /**

@@ -20,6 +20,9 @@ public class SysUser extends BaseEntity {
     /** 昵称 */
     private String nickname;
 
+    /** 头像（base64） */
+    private String avatar;
+
     /** 角色ID */
     private Long roleId;
 
@@ -71,6 +74,14 @@ public class SysUser extends BaseEntity {
 
     public void setNickname(String nickname) {
         this.nickname = nickname;
+    }
+
+    public String getAvatar() {
+        return avatar;
+    }
+
+    public void setAvatar(String avatar) {
+        this.avatar = avatar;
     }
 
     public Long getRoleId() {

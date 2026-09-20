@@ -31,9 +31,14 @@
           <i class="el-icon-chat-dot-round"></i>
           <span>AI 心理助手</span>
         </el-menu-item>
+        <el-menu-item index="/portal/personal_center">
+          <i class="el-icon-user-solid"></i>
+          <span>个人中心</span>
+        </el-menu-item>
       </el-menu>
       <div class="portal-user">
-        <i class="el-icon-user-solid"></i>
+        <img v-if="user.avatar" :src="user.avatar" class="portal-avatar" alt="头像" />
+        <i v-else class="el-icon-user-solid"></i>
         <span class="user-name">{{ user.nickname || user.username }}</span>
         <el-button type="text" @click="handleLogout">退出登录</el-button>
       </div>
@@ -47,8 +52,8 @@
 </template>
 
 <script>
-import { getUser, removeToken, removeUser } from '@/utils/auth'
-import { logout } from '@/api/login'
+import { getUser, setUser, removeToken, removeUser } from '@/utils/auth'
+import { logout, getInfo } from '@/api/login'
 
 export default {
   name: 'PortalLayout',
@@ -57,16 +62,18 @@ export default {
       user: getUser() || {}
     }
   },
-  computed: {
-    activeMenu() {
-      const { meta, path } = this.$route
-      if (meta && meta.activeMenu) {
-        return meta.activeMenu
-      }
-      return path
-    }
+  created() {
+    this.loadUser()
   },
   methods: {
+    loadUser() {
+      getInfo().then(res => {
+        if (res.data && res.data.user) {
+          this.user = res.data.user
+          setUser(res.data.user)
+        }
+      })
+    },
     handleLogout() {
       logout().finally(() => {
         removeToken()
@@ -123,6 +130,12 @@ export default {
 }
 .user-name {
   margin: 0 8px;
+}
+.portal-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  object-fit: cover;
 }
 .portal-main {
   flex: 1;

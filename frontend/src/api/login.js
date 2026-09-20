@@ -41,3 +41,21 @@ export function register(data) {
     data
   })
 }
+
+/** 个人中心-修改当前用户资料（昵称/性别/年龄/手机号） */
+export function updateProfile(data) {
+  return request({
+    url: '/user/profile',
+    method: 'put',
+    data
+  })
+}
+
+/** 个人中心-修改当前用户密码（校验原密码） */
+export function updatePwd(data) {
+  return request({
+    url: '/user/profile/updatePwd',
+    method: 'put',
+    data
+  })
+}

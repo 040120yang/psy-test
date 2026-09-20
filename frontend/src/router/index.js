@@ -53,6 +53,12 @@ export const portalRoutes = [
         name: 'PortalCoze',
         component: () => import('@/views/portal/coze'),
         meta: { title: 'AI 智能体', icon: 'el-icon-chat-dot-round' }
+      },
+      {
+        path: 'personal_center',
+        name: 'PortalPersonalCenter',
+        component: () => import('@/views/portal/personal_center'),
+        meta: { title: '个人中心', icon: 'el-icon-user-solid' }
       }
     ]
   }
