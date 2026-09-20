@@ -13,6 +13,7 @@ public class PsyTestApplication {
 
     public static void main(String[] args) {
         SpringApplication.run(PsyTestApplication.class, args);
+        System.out.println("测试git");
         System.out.println("区域心理测试系统后端启动成功，访问地址：http://localhost:8080");
     }
 }

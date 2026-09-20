@@ -1,0 +1,60 @@
+server:
+  port: 8080
+  servlet:
+    context-path: /
+
+spring:
+  application:
+    name: psy-test
+  # Knife4j(springfox 3.0) 在 Spring Boot 2.6+ 需要 ant_path_matcher
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
+  datasource:
+    type: com.alibaba.druid.pool.DruidDataSource
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    # 修改为你的 MySQL 账号密码
+    url: jdbc:mysql://localhost:3306/psy_test?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
+    username: root
+    password: root
+    druid:
+      initial-size: 5
+      min-idle: 5
+      max-active: 20
+      max-wait: 60000
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: GMT+8
+  sql:
+    init:
+      mode: always
+      schema-locations: classpath:psy_test.sql
+
+mybatis:
+  mapper-locations: classpath:mapper/*.xml
+  type-aliases-package: com.psy.**.domain
+  configuration:
+    map-underscore-to-camel-case: true
+
+pagehelper:
+  helper-dialect: mysql
+  reasonable: true
+  support-methods-arguments: true
+
+# JWT 令牌配置
+token:
+  # 令牌密钥（生产环境请更换为足够长的随机字符串）
+  secret: psy-test-regional-psychological-testing-system-secret-key-2026
+  # 令牌有效期（分钟）
+  expire-time: 6000
+
+# 扣子（Coze）AI 智能体配置
+# 访问令牌：https://www.coze.cn/open/oauth/pats 申请个人访问令牌（格式 pat_xxx）
+# 智能体ID：扣子智能体开发页 URL 中 bot 参数后的数字；发布时需勾选「API」
+coze:
+  api-token: "pat_MqEfDTSvicxznWRGqEtNGMcbxnVD9bCR5RuepWjfVaWKPoI6wR2iztBmpCXElzNw"
+  bot-id: "7640438321206067234"
+
+logging:
+  level:
+    com.psy: debug
