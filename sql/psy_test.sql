@@ -11,7 +11,7 @@
  Target Server Version : 80012 (8.0.12)
  File Encoding         : 65001
 
- Date: 20/09/2026 15:31:01
+ Date: 20/09/2026 16:56:29
 */
 
 SET NAMES utf8mb4;
@@ -35,7 +35,7 @@ CREATE TABLE `psy_patient`  (
   `update_time` datetime NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   PRIMARY KEY (`patient_id`) USING BTREE,
   INDEX `idx_user`(`user_id` ASC) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 11 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '患者信息表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 11 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '患者信息表' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of psy_patient
@@ -57,7 +57,7 @@ CREATE TABLE `psy_question`  (
   `create_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   PRIMARY KEY (`question_id`) USING BTREE,
   INDEX `idx_scale`(`scale_id` ASC) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 84 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '量表题目表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 84 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '量表题目表' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of psy_question
@@ -161,7 +161,7 @@ CREATE TABLE `psy_scale`  (
   `update_time` datetime NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   PRIMARY KEY (`scale_id`) USING BTREE,
   UNIQUE INDEX `uk_scale_code`(`scale_code` ASC) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 6 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '心理量表信息表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 6 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '心理量表信息表' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of psy_scale
@@ -184,7 +184,7 @@ CREATE TABLE `psy_test_answer`  (
   `create_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '答题时间',
   PRIMARY KEY (`answer_id`) USING BTREE,
   INDEX `idx_record`(`record_id` ASC) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 183 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '答题明细表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 183 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '答题明细表' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of psy_test_answer
@@ -389,7 +389,7 @@ CREATE TABLE `psy_test_record`  (
   PRIMARY KEY (`record_id`) USING BTREE,
   INDEX `idx_user`(`user_id` ASC) USING BTREE,
   INDEX `idx_scale`(`scale_id` ASC) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 11 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '心理测评记录表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 11 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '心理测评记录表' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of psy_test_record
@@ -416,7 +416,7 @@ CREATE TABLE `sys_role`  (
   `remark` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '备注',
   `create_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   PRIMARY KEY (`role_id`) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 4 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '角色信息表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 4 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '角色信息表' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of sys_role
@@ -446,7 +446,7 @@ CREATE TABLE `sys_user`  (
   `remark` varchar(500) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '备注',
   PRIMARY KEY (`user_id`) USING BTREE,
   UNIQUE INDEX `uk_username`(`username` ASC) USING BTREE
-) ENGINE = InnoDB AUTO_INCREMENT = 6 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '用户信息表' ROW_FORMAT = Dynamic;
+) ENGINE = InnoDB AUTO_INCREMENT = 6 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '用户信息表' ROW_FORMAT = DYNAMIC;
 
 -- ----------------------------
 -- Records of sys_user
