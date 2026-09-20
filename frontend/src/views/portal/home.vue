@@ -11,7 +11,7 @@
         </div>
         <div class="welcome-hotline">
           <div class="hotline-title">心理援助热线</div>
-          <div class="hotline-num">12356</div>
+          <div class="hotline-num">400-161-9995</div>
           <div class="hotline-desc">24 小时全国统一心理援助热线</div>
         </div>
       </div>
@@ -193,7 +193,7 @@ export default {
       const geometry = new THREE.BufferGeometry()
       const vertices = []
       const size = 2000
-      for (let i = 0; i < 20000; i++) {
+      for (let i = 0; i < 20000 ; i++) {
         const x = (Math.random() * size + Math.random() * size) / 2 - size / 2
         const y = (Math.random() * size + Math.random() * size) / 2 - size / 2
         const z = (Math.random() * size + Math.random() * size) / 2 - size / 2
