@@ -320,4 +320,3 @@ cd frontend && npm install && npm run dev
 ### 安全约定
 - `application.yml`（含数据库密码、AI 令牌等敏感配置）已加入 `.gitignore`，**严禁提交**
 - 新增配置时同步更新 `application-example.yml` 模板
-

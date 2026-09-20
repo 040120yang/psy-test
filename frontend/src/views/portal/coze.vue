@@ -45,6 +45,7 @@
 
 <script>
 import { chatWithCoze } from '@/api/coze'
+import { getUser } from '@/utils/auth'
 
 export default {
   name: 'PortalCoze',
@@ -57,24 +58,50 @@ export default {
     }
   },
   mounted() {
-    // 从会话中恢复本用户的多轮上下文
-    this.conversationId = sessionStorage.getItem('PsyTest-Coze-Chat') || ''
+    // 恢复当前用户的对话记录（按用户名隔离，跨会话保留）
+    try {
+      const saved = localStorage.getItem(this.msgKey())
+      if (saved) {
+        const arr = JSON.parse(saved)
+        if (Array.isArray(arr)) this.messages = arr
+      }
+    } catch (e) {
+      // 存储数据异常时忽略，从空会话开始
+    }
+    this.conversationId = localStorage.getItem(this.chatKey()) || ''
+    this.scrollBottom()
   },
   methods: {
+    // 存储 key 按当前登录用户隔离
+    msgKey() {
+      const u = getUser()
+      return 'PsyTest-Coze-Messages-' + (u && u.username ? u.username : 'guest')
+    },
+    chatKey() {
+      const u = getUser()
+      return 'PsyTest-Coze-Chat-' + (u && u.username ? u.username : 'guest')
+    },
+    // 持久化消息与上下文（最多保留最近 50 条，避免超出浏览器存储上限）
+    persist() {
+      const arr = this.messages.slice(-50)
+      localStorage.setItem(this.msgKey(), JSON.stringify(arr))
+      if (this.conversationId) {
+        localStorage.setItem(this.chatKey(), this.conversationId)
+      }
+    },
     handleSend() {
       const text = (this.input || '').trim()
       if (!text || this.loading) return
       this.messages.push({ role: 'user', content: text })
       this.input = ''
       this.scrollBottom()
+      this.persist()
       this.loading = true
       chatWithCoze({ message: text, conversationId: this.conversationId || undefined })
         .then(res => {
           this.messages.push({ role: 'assistant', content: res.reply })
           this.conversationId = res.conversationId || ''
-          if (this.conversationId) {
-            sessionStorage.setItem('PsyTest-Coze-Chat', this.conversationId)
-          }
+          this.persist()
           this.scrollBottom()
         })
         .catch(err => {

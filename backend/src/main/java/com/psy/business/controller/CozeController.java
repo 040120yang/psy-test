@@ -98,6 +98,15 @@ public class CozeController {
                     completed = true;
                     break;
                 }
+                // 智能体执行失败：透出扣子平台真实原因（如积分额度不足、服务未发布等），避免笼统报超时
+                if (retrieveData != null && "failed".equals(retrieveData.get("status"))) {
+                    Map lastError = (Map) retrieveData.get("last_error");
+                    String failMsg = lastError == null ? "智能体执行失败" : String.valueOf(lastError.get("msg"));
+                    if (StringUtils.isEmpty(failMsg) || "null".equals(failMsg)) {
+                        failMsg = "智能体执行失败";
+                    }
+                    return AjaxResult.error("智能体执行失败：" + failMsg);
+                }
                 Thread.sleep(1000);
             }
             if (!completed) {
