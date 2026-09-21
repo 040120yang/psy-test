@@ -27,17 +27,21 @@
           <i class="el-icon-document"></i>
           <span>我的测评记录</span>
         </el-menu-item>
-        <el-menu-item index="/portal/coze">
+        <!-- <el-menu-item index="/portal/coze">
           <i class="el-icon-chat-dot-round"></i>
           <span>AI 心理助手</span>
+        </el-menu-item> -->
+        <el-menu-item index="/portal/follow">
+          <i class="el-icon-bell"></i>
+          <span>我的随访</span>
+        </el-menu-item>
+        <el-menu-item index="/portal/message">
+          <i class="el-icon-message"></i>
+          <span>消息中心</span>
         </el-menu-item>
         <el-menu-item index="/portal/personal_center">
           <i class="el-icon-user-solid"></i>
           <span>个人中心</span>
-        </el-menu-item>
-        <el-menu-item index="/portal/follow">
-          <i class="el-icon-bell"></i>
-          <span>我的随访</span>
         </el-menu-item>
       </el-menu>
       <div class="portal-user">

@@ -18,7 +18,7 @@
         <el-table-column prop="scaleName" label="关联量表" width="140" />
         <el-table-column prop="level" label="测评等级" width="110">
           <template slot-scope="scope">
-            <el-tag :type="levelTag(scope.row.level)">{{ scope.row.level }}</el-tag>
+            <el-tag size="small" :color="getLevelColor(scope.row.level)" style="color:#fff;border:0;">{{ scope.row.level }}</el-tag>
           </template>
         </el-table-column>
         <el-table-column prop="followDate" label="随访日期" width="110" />
@@ -43,11 +43,15 @@
     <!-- 新增/编辑 -->
     <el-dialog :title="edit.id ? '编辑随访' : '新增随访任务'" :visible.sync="editVisible" width="500px">
       <el-form :model="edit" label-width="90px">
-        <el-form-item label="患者ID">
-          <el-input v-model="edit.userId" placeholder="用户ID（sys_user.user_id）" />
+        <el-form-item label="患者">
+          <el-select v-model="edit.userId" filterable placeholder="选择患者" style="width: 100%;" @change="onPatientChange">
+            <el-option v-for="p in patients" :key="p.userId" :label="p.patientName + ' (' + p.username + ')'" :value="p.userId" />
+          </el-select>
         </el-form-item>
-        <el-form-item label="关联记录ID">
-          <el-input v-model="edit.recordId" placeholder="测评记录ID（可选）" />
+        <el-form-item label="关联记录">
+          <el-select v-model="edit.recordId" filterable placeholder="选择患者的测评记录" style="width: 100%;" @change="onRecordChange">
+            <el-option v-for="r in userRecords" :key="r.recordId" :label="r.scaleName + ' - ' + r.level + ' (' + r.createTime + ')'" :value="r.recordId" />
+          </el-select>
         </el-form-item>
         <el-form-item label="随访日期">
           <el-date-picker v-model="edit.followDate" type="date" value-format="yyyy-MM-dd" style="width: 100%;" />
@@ -68,7 +72,7 @@
 
     <!-- 完成随访 -->
     <el-dialog title="完成随访" :visible.sync="finishVisible" width="500px">
-      <el-form :model="finish" label-width="90px">
+      <el-form :model="finish" label-width="120px">
         <el-form-item label="症状自评(0-10)">
           <el-input-number v-model="finish.symptomScore" :min="0" :max="10" />
         </el-form-item>
@@ -95,18 +99,39 @@ export default {
     return {
       list: [],
       status: '',
+      patients: [],
+      userRecords: [],
       editVisible: false,
       edit: { userId: '', recordId: '', followDate: '', followType: '线上' },
       finishVisible: false,
       finish: { id: '', symptomScore: 5, doctorNote: '', nextFollowDate: '' }
     }
   },
-  mounted() { this.load() },
+  mounted() {
+    this.load()
+    this.loadPatients()
+  },
   methods: {
     load() {
       request({ url: '/follow/admin/list', method: 'get', params: { status: this.status } }).then(res => {
         this.list = res.rows || []
       })
+    },
+    loadPatients() {
+      request({ url: '/patient/list', method: 'get' }).then(res => {
+        this.patients = res.rows || []
+      })
+    },
+    onPatientChange(userId) {
+      this.edit.recordId = ''
+      this.userRecords = []
+      if (!userId) return
+      request({ url: '/test/record/list', method: 'get', params: { userId } }).then(res => {
+        this.userRecords = res.rows || []
+      })
+    },
+    onRecordChange() {
+      // 选了记录后可以自动带出量表和等级，这里暂不需要
     },
     openAdd() {
       this.edit = { userId: '', recordId: '', followDate: '', followType: '线上' }
@@ -117,9 +142,20 @@ export default {
       this.editVisible = true
     },
     saveEdit() {
+      if (!this.edit.userId) {
+        this.$message.warning('请选择患者')
+        return
+      }
+      if (!this.edit.followDate) {
+        this.$message.warning('请选择随访日期')
+        return
+      }
+      const data = { ...this.edit }
+      if (!data.recordId) data.recordId = null
+      if (!data.doctorId) data.doctorId = null
       const url = this.edit.id ? '/follow' : '/follow'
       const method = this.edit.id ? 'put' : 'post'
-      request({ url, method, data: this.edit }).then(() => {
+      request({ url, method, data }).then(() => {
         this.$message.success('保存成功')
         this.editVisible = false
         this.load()
@@ -144,12 +180,21 @@ export default {
         })
       })
     },
-    levelTag(level) {
-      if (!level) return 'info'
-      if (level.includes('重度')) return 'danger'
-      if (level.includes('中度')) return 'warning'
-      if (level.includes('轻度')) return 'primary'
-      return 'success'
+    getLevelColor(name) {
+      if (name === '正常') return '#67C23A'
+      if (name && name.indexOf('重度睡眠') !== -1) return '#B22222'
+      if (name && name.indexOf('重度焦虑') !== -1) return '#8B0000'
+      if (name && name.indexOf('重度抑郁') !== -1) return '#FF8A80'
+      if (name && name.indexOf('重度') !== -1) return '#ff4d4f'
+      if (name && name.indexOf('中度睡眠') !== -1) return '#FFA940'
+      if (name && name.indexOf('中度焦虑') !== -1) return '#E86F0C'
+      if (name && name.indexOf('中度抑郁') !== -1) return '#FF9800'
+      if (name && name.indexOf('中度') !== -1) return '#FA8C16'
+      if (name && name.indexOf('轻度睡眠') !== -1) return '#FFEB3B'
+      if (name && name.indexOf('轻度焦虑') !== -1) return '#FFD700'
+      if (name && name.indexOf('轻度抑郁') !== -1) return '#F5C518'
+      if (name && name.indexOf('轻度') !== -1) return '#E6A23C'
+      return '#909399'
     },
     statusTag(status) {
       if (status === '已完成') return 'success'

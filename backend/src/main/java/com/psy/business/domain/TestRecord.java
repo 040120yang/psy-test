@@ -46,6 +46,17 @@ public class TestRecord extends BaseEntity {
     /** 用户账号（联查） */
     private String username;
 
+    /** 医生诊断结论 */
+    private String doctorConclusion;
+
+    /** 医生处方建议 */
+    private String doctorAdvice;
+
+    public String getDoctorConclusion() { return doctorConclusion; }
+    public void setDoctorConclusion(String doctorConclusion) { this.doctorConclusion = doctorConclusion; }
+    public String getDoctorAdvice() { return doctorAdvice; }
+    public void setDoctorAdvice(String doctorAdvice) { this.doctorAdvice = doctorAdvice; }
+
     public Long getRecordId() {
         return recordId;
     }

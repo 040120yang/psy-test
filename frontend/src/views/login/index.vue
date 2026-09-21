@@ -42,8 +42,6 @@
         </el-form-item>
       </el-form>
       <div class="login-tip">
-        <!-- <p>演示账号（密码均为 123456）：</p>
-        <p>admin（系统管理员） / doctor（临床医护人员） / user（公众用户）</p> -->
         <p class="register-link">
           还没有账号？
           <el-button type="text" @click="$router.push('/register')">立即注册</el-button>

@@ -1,6 +1,7 @@
 package com.psy.business.domain;
 
 import java.util.Date;
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 /**
  * 随访管理
@@ -10,11 +11,13 @@ public class FollowUp {
     private Long userId;
     private Long recordId;
     private Long doctorId;
+    @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
     private Date followDate;
     private String followType;
     private String status;
     private Integer symptomScore;
     private String doctorNote;
+    @JsonFormat(pattern = "yyyy-MM-dd", timezone = "GMT+8")
     private Date nextFollowDate;
     private Date createTime;
 

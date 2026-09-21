@@ -36,6 +36,9 @@ public class SysLoginService {
     @Autowired
     private com.psy.business.mapper.PatientMapper patientMapper;
 
+    @Autowired
+    private org.springframework.jdbc.core.JdbcTemplate jdbcTemplate;
+
     /**
      * 登录校验：验证码 -> 账号密码 -> 生成令牌
      */
@@ -71,7 +74,15 @@ public class SysLoginService {
             loginUser.setRoleName(role.getRoleName());
         }
         // 4. 生成令牌
-        return tokenService.createToken(loginUser);
+        String token = tokenService.createToken(loginUser);
+        // 5. 记录登录日志
+        try {
+            jdbcTemplate.update("INSERT INTO sys_login_log (user_name, ipaddr, status, msg) VALUES (?, ?, 0, '登录成功')",
+                username, "127.0.0.1");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return token;
     }
 
     /**

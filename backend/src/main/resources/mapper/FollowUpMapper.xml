@@ -3,19 +3,30 @@
 <mapper namespace="com.psy.business.mapper.FollowUpMapper">
 
     <select id="selectList" resultType="com.psy.business.domain.FollowUp">
-        SELECT f.*, u.username, u.nickname, s.scale_name, r.level
+        SELECT f.*,
+               CASE WHEN f.status = '待随访' AND f.follow_date &lt; CURDATE() THEN '已逾期' ELSE f.status END as status,
+               u.username, u.nickname, s.scale_name, r.level
         FROM psy_follow_up f
         LEFT JOIN sys_user u ON f.user_id = u.user_id
         LEFT JOIN psy_test_record r ON f.record_id = r.record_id
         LEFT JOIN psy_scale s ON r.scale_id = s.scale_id
         WHERE 1=1
         <if test="userId != null">AND f.user_id = #{userId}</if>
-        <if test="status != null and status != ''">AND f.status = #{status}</if>
+        <if test="status != null and status != ''">
+            AND (
+                <choose>
+                    <when test="status == '已逾期'">f.status = '待随访' AND f.follow_date &lt; CURDATE()</when>
+                    <otherwise>f.status = #{status}</otherwise>
+                </choose>
+            )
+        </if>
         ORDER BY f.follow_date DESC, f.create_time DESC
     </select>
 
     <select id="selectById" resultType="com.psy.business.domain.FollowUp">
-        SELECT f.*, u.username, u.nickname, s.scale_name, r.level
+        SELECT f.*,
+               CASE WHEN f.status = '待随访' AND f.follow_date &lt; CURDATE() THEN '已逾期' ELSE f.status END as status,
+               u.username, u.nickname, s.scale_name, r.level
         FROM psy_follow_up f
         LEFT JOIN sys_user u ON f.user_id = u.user_id
         LEFT JOIN psy_test_record r ON f.record_id = r.record_id

@@ -16,6 +16,8 @@
         <result property="scaleCode"    column="scale_code"/>
         <result property="nickname"     column="nickname"/>
         <result property="username"     column="username"/>
+        <result property="doctorConclusion" column="doctor_conclusion"/>
+        <result property="doctorAdvice" column="doctor_advice"/>
     </resultMap>
 
     <sql id="selectRecordVo">
@@ -39,6 +41,9 @@
     <select id="selectAllRecords" parameterType="com.psy.business.domain.TestRecord" resultMap="TestRecordResult">
         <include refid="selectRecordVo"/>
         <where>
+            <if test="record.userId != null">
+                AND tr.user_id = #{record.userId}
+            </if>
             <if test="record.scaleId != null">
                 AND tr.scale_id = #{record.scaleId}
             </if>

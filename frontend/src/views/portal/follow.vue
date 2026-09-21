@@ -11,7 +11,7 @@
         <el-table-column prop="scaleName" label="关联量表" width="150" />
         <el-table-column prop="level" label="测评等级" width="120">
           <template slot-scope="scope">
-            <el-tag :type="levelTag(scope.row.level)">{{ scope.row.level }}</el-tag>
+            <el-tag size="small" :color="getLevelColor(scope.row.level)" style="color:#fff;border:0;">{{ scope.row.level }}</el-tag>
           </template>
         </el-table-column>
         <el-table-column prop="followType" label="随访方式" width="100" />
@@ -43,12 +43,21 @@ export default {
         this.overdueCount = this.list.filter(i => i.status === '待随访').length
       })
     },
-    levelTag(level) {
-      if (!level) return 'info'
-      if (level.includes('重度')) return 'danger'
-      if (level.includes('中度')) return 'warning'
-      if (level.includes('轻度')) return 'primary'
-      return 'success'
+    getLevelColor(name) {
+      if (name === '正常') return '#67C23A'
+      if (name && name.indexOf('重度睡眠') !== -1) return '#B22222'
+      if (name && name.indexOf('重度焦虑') !== -1) return '#8B0000'
+      if (name && name.indexOf('重度抑郁') !== -1) return '#FF8A80'
+      if (name && name.indexOf('重度') !== -1) return '#ff4d4f'
+      if (name && name.indexOf('中度睡眠') !== -1) return '#FFA940'
+      if (name && name.indexOf('中度焦虑') !== -1) return '#E86F0C'
+      if (name && name.indexOf('中度抑郁') !== -1) return '#FF9800'
+      if (name && name.indexOf('中度') !== -1) return '#FA8C16'
+      if (name && name.indexOf('轻度睡眠') !== -1) return '#FFEB3B'
+      if (name && name.indexOf('轻度焦虑') !== -1) return '#FFD700'
+      if (name && name.indexOf('轻度抑郁') !== -1) return '#F5C518'
+      if (name && name.indexOf('轻度') !== -1) return '#E6A23C'
+      return '#909399'
     },
     statusTag(status) {
       if (status === '已完成') return 'success'

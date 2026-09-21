@@ -65,6 +65,12 @@ export const portalRoutes = [
         name: 'PortalFollow',
         component: () => import('@/views/portal/follow'),
         meta: { title: '我的随访', icon: 'el-icon-bell' }
+      },
+      {
+        path: 'message',
+        name: 'PortalMessage',
+        component: () => import('@/views/portal/message'),
+        meta: { title: '消息中心', icon: 'el-icon-message' }
       }
     ]
   }
@@ -103,6 +109,25 @@ export const adminRoutes = [
         name: 'AdminFollow',
         component: () => import('@/views/admin/follow'),
         meta: { title: '随访管理', icon: 'el-icon-bell', roles: ['admin', 'doctor'] }
+      },
+      {
+        path: 'log',
+        component: { render: h => h('router-view') },
+        meta: { title: '日志管理', icon: 'el-icon-document-checked', roles: ['admin'] },
+        children: [
+          {
+            path: 'oper',
+            name: 'AdminLogOper',
+            component: () => import('@/views/admin/log/oper'),
+            meta: { title: '操作日志' }
+          },
+          {
+            path: 'login',
+            name: 'AdminLogLogin',
+            component: () => import('@/views/admin/log/login'),
+            meta: { title: '登录日志' }
+          }
+        ]
       },
       {
         path: 'system',

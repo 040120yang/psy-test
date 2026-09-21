@@ -14,6 +14,9 @@ public class FollowUpService {
     @Autowired
     private FollowUpMapper followUpMapper;
 
+    @Autowired
+    private org.springframework.jdbc.core.JdbcTemplate jdbcTemplate;
+
     public TableDataInfo adminList(String status) {
         List<FollowUp> list = followUpMapper.selectList(null, status);
         return TableDataInfo.success(list, list.size());
@@ -31,7 +34,21 @@ public class FollowUpService {
 
     public int add(FollowUp followUp) {
         followUp.setStatus("待随访");
-        return followUpMapper.insert(followUp);
+        int rows = followUpMapper.insert(followUp);
+        // 自动发送消息通知用户
+        try {
+            String dateStr = followUp.getFollowDate() != null
+                ? new java.text.SimpleDateFormat("yyyy-MM-dd").format(followUp.getFollowDate())
+                : "";
+            jdbcTemplate.update(
+                "INSERT INTO psy_message (user_id, title, content, type) VALUES (?, '随访提醒', ?, 'follow')",
+                followUp.getUserId(),
+                "您有一条新的随访任务，随访日期：" + dateStr + "，请及时处理。"
+            );
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return rows;
     }
 
     public int update(FollowUp followUp) {
@@ -47,14 +64,6 @@ public class FollowUpService {
         if (nextFollowDate != null && !nextFollowDate.isEmpty()) {
             try {
                 f.setNextFollowDate(new java.text.SimpleDateFormat("yyyy-MM-dd").parse(nextFollowDate));
-                // 自动创建下次随访任务
-                FollowUp next = new FollowUp();
-                next.setUserId(followUpMapper.selectById(id).getUserId());
-                next.setRecordId(followUpMapper.selectById(id).getRecordId());
-                next.setFollowDate(new java.text.SimpleDateFormat("yyyy-MM-dd").parse(nextFollowDate));
-                next.setFollowType("线上");
-                next.setStatus("待随访");
-                followUpMapper.insert(next);
             } catch (Exception e) {
                 e.printStackTrace();
             }
