@@ -107,7 +107,10 @@ export default {
             // 按角色进入对应端：公众用户 → 用户端，医护/管理员 → 管理端
             const role = (userInfo.roles && userInfo.roles[0]) || 'user'
             this.$router.push(role === 'user' ? '/portal/home' : '/admin/dashboard')
-            this.$message.success('登录成功')
+            this.$message.success({
+              message: "登录成功",
+              duration: 1500
+            })
           })
           .catch(() => {
             this.getCaptcha()
