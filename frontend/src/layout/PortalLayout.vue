@@ -1,10 +1,10 @@
-<template>
+﻿<template>
   <div class="portal-wrapper">
     <!-- 用户端顶栏 -->
     <div class="portal-header">
       <div class="portal-brand">
-        <span class="brand-title">区域心理测试系统</span>
-        <span class="brand-sub">公众心理测评服务平台</span>
+        <span class="brand-title">区域智能诊疗辅助诊断系统</span>
+        <span class="brand-sub">智能诊疗辅助诊断服务平台</span>
       </div>
       <el-menu
         mode="horizontal"

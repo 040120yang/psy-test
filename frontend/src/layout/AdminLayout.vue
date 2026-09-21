@@ -1,9 +1,9 @@
-<template>
+﻿<template>
   <div class="app-wrapper">
     <!-- 侧边栏 -->
     <div class="sidebar-container">
       <div class="sidebar-logo">
-        <span class="logo-text">区域心理测试系统</span>
+        <span class="logo-text">区域智能诊疗辅助诊断系统</span>
         <span class="logo-sub">管理后台</span>
       </div>
       <el-menu

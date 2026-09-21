@@ -1,9 +1,9 @@
-<template>
+﻿<template>
   <div class="register-container">
     <div class="register-card">
       <div class="register-title">
         <h2>注册公众用户</h2>
-        <p>区域心理测试系统 · 用户端</p>
+        <p>区域智能诊疗辅助诊断系统 · 用户端</p>
       </div>
       <el-form ref="registerForm" :model="registerForm" :rules="registerRules" size="medium">
         <el-form-item prop="username">

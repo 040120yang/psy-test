@@ -1,8 +1,8 @@
-# 区域心理测试系统（Regional Psychological Testing System）
+﻿# 区域智能诊疗辅助诊断系统（Regional Intelligent Diagnosis Assistance System）
 
 > 开源协作版：任何人可 fork / clone 共同开发，欢迎提交 Issue 与 Pull Request。
 
-基于 **SpringBoot + Vue 前后端分离** 架构的区域心理测试系统，项目模板参照 **若依（RuoYi-Vue）** 框架的工程组织、接口风格与分层思想实现。系统采用**双端结构**（对应"公众心理服务 + 医护诊疗辅助"设计）：
+基于 **SpringBoot + Vue 前后端分离** 架构的区域智能诊疗辅助诊断系统，项目模板参照 **若依（RuoYi-Vue）** 框架的工程组织、接口风格与分层思想实现。系统采用**双端结构**（对应"公众心理服务 + 医护诊疗辅助"设计）：
 
 - **用户端**（`/portal`，面向公众用户）：工作台首页（我的统计 + 快捷操作）、心理测评（选择量表 → 在线答题 → 测评报告）、我的测评记录、**自助注册**（登录页可注册公众账号）
 - **管理端**（`/admin`，面向系统管理员/临床医护人员）：系统概览、全部测评记录、患者管理、系统管理（用户/量表/题目）
@@ -90,7 +90,7 @@ mvn clean package -DskipTests
 java -jar target/psy-test.jar
 ```
 
-启动成功提示：`区域心理测试系统后端启动成功，访问地址：http://localhost:8080`
+启动成功提示：`区域智能诊疗辅助诊断系统后端启动成功，访问地址：http://localhost:8080`
 
 ### 3. 启动前端（端口 8088）
 

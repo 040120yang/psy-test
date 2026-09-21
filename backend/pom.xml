@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+﻿<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
@@ -15,7 +15,7 @@
     <artifactId>psy-test</artifactId>
     <version>1.0.0</version>
     <name>psy-test</name>
-    <description>区域心理测试系统（参照若依 RuoYi-Vue 前后端分离架构）</description>
+    <description>区域智能诊疗辅助诊断系统（参照若依 RuoYi-Vue 前后端分离架构）</description>
 
     <properties>
         <java.version>1.8</java.version>

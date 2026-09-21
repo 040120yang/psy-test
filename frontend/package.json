@@ -1,8 +1,8 @@
-{
+﻿{
   "name": "psy-test-ui",
   "version": "1.0.0",
   "private": true,
-  "description": "区域心理测试系统前端（Vue2 + Element UI，参照若依 RuoYi-Vue）",
+  "description": "区域智能诊疗辅助诊断系统前端（Vue2 + Element UI，参照若依 RuoYi-Vue）",
   "scripts": {
     "dev": "vue-cli-service serve",
     "build:prod": "vue-cli-service build"

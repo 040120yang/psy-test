@@ -1,4 +1,4 @@
-package com.psy.framework.config;
+﻿package com.psy.framework.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -29,7 +29,7 @@ public class Knife4jConfig {
     public Docket docket() {
         return new Docket(DocumentationType.SWAGGER_2)
                 .apiInfo(new ApiInfoBuilder()
-                        .title("区域心理测试系统 API")
+                        .title("区域智能诊疗辅助诊断系统 API")
                         .description("前后端分离架构，参照若依（RuoYi-Vue）接口风格；调试需先登录获取令牌并填入 Authorization 请求头。")
                         .version("1.0.0")
                         .build())
