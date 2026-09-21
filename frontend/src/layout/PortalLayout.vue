@@ -35,6 +35,10 @@
           <i class="el-icon-user-solid"></i>
           <span>个人中心</span>
         </el-menu-item>
+        <el-menu-item index="/portal/follow">
+          <i class="el-icon-bell"></i>
+          <span>我的随访</span>
+        </el-menu-item>
       </el-menu>
       <div class="portal-user">
         <img v-if="user.avatar" :src="user.avatar" class="portal-avatar" alt="头像" />

@@ -30,7 +30,11 @@
           <template slot-scope="scope">{{ { 0: '男', 1: '女', 2: '未知' }[scope.row.sex] }}</template>
         </el-table-column>
         <el-table-column prop="age" label="年龄" width="70" align="center" />
-        <el-table-column prop="phone" label="手机号" width="130" />
+        <el-table-column label="手机号" width="130">
+          <template slot-scope="scope">
+            {{ scope.row.phone ? scope.row.phone.replace(/(\d{3})\d{4}(\d{4})/, '$1****$2') : '-' }}
+          </template>
+        </el-table-column>
         <el-table-column label="状态" width="90" align="center">
           <template slot-scope="scope">
             <el-tag :type="scope.row.status === '0' ? 'success' : 'danger'" size="small">

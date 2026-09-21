@@ -19,8 +19,14 @@
       </div>
       <div v-for="(m, idx) in messages" :key="idx" class="msg-row" :class="m.role">
         <div class="msg-avatar" v-if="m.role === 'assistant'"><i class="el-icon-chat-dot-round"></i></div>
-        <div class="msg-bubble">{{ m.content }}</div>
-        <div class="msg-avatar user-avatar" v-if="m.role === 'user'"><i class="el-icon-user"></i></div>
+        <div class="msg-content">
+          <div class="msg-bubble">{{ m.content }}</div>
+          <div class="msg-time">{{ formatTime(m.time) }}</div>
+        </div>
+        <div class="msg-avatar user-avatar" v-if="m.role === 'user'">
+          <img v-if="user.avatar" :src="user.avatar" alt="头像" />
+          <i v-else class="el-icon-user"></i>
+        </div>
       </div>
       <div v-if="loading" class="msg-row assistant">
         <div class="msg-avatar"><i class="el-icon-chat-dot-round"></i></div>
@@ -46,6 +52,7 @@
 <script>
 import { chatWithCoze } from '@/api/coze'
 import { getUser } from '@/utils/auth'
+import request from '@/utils/request'
 
 export default {
   name: 'PortalCoze',
@@ -54,10 +61,15 @@ export default {
       input: '',
       loading: false,
       messages: [],
-      conversationId: ''
+      conversationId: '',
+      user: getUser() || {}
     }
   },
   mounted() {
+    // 获取最新用户信息（含最新头像）
+    request({ url: '/getInfo', method: 'get' }).then(res => {
+      if (res.user) this.user = res.user
+    })
     // 恢复当前用户的对话记录（按用户名隔离，跨会话保留）
     try {
       const saved = localStorage.getItem(this.msgKey())
@@ -92,21 +104,21 @@ export default {
     handleSend() {
       const text = (this.input || '').trim()
       if (!text || this.loading) return
-      this.messages.push({ role: 'user', content: text })
+      this.messages.push({ role: 'user', content: text, time: Date.now() })
       this.input = ''
       this.scrollBottom()
       this.persist()
       this.loading = true
       chatWithCoze({ message: text, conversationId: this.conversationId || undefined })
         .then(res => {
-          this.messages.push({ role: 'assistant', content: res.reply })
+          this.messages.push({ role: 'assistant', content: res.reply, time: Date.now() })
           this.conversationId = res.conversationId || ''
           this.persist()
           this.scrollBottom()
         })
         .catch(err => {
           this.$message.error((err && err.message) || 'AI 服务暂时不可用，请稍后重试')
-          this.messages.push({ role: 'assistant', content: '抱歉，我刚才走神了，请稍后再试一次。' })
+          this.messages.push({ role: 'assistant', content: '抱歉，我刚才走神了，请稍后再试一次。', time: Date.now() })
         })
         .finally(() => {
           this.loading = false
@@ -118,6 +130,13 @@ export default {
         const el = this.$refs.chatBody
         if (el) el.scrollTop = el.scrollHeight
       })
+    },
+    formatTime(ts) {
+      if (!ts) return ''
+      const d = new Date(ts)
+      const h = String(d.getHours()).padStart(2, '0')
+      const m = String(d.getMinutes()).padStart(2, '0')
+      return `${h}:${m}`
     }
   }
 }
@@ -185,6 +204,7 @@ export default {
 }
 .msg-row {
   display: flex;
+  align-items: flex-start;
   margin-bottom: 16px;
 }
 .msg-row.user {
@@ -205,8 +225,14 @@ export default {
 .user-avatar {
   background: #409eff;
 }
+.user-avatar img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+}
 .msg-bubble {
-  max-width: 70%;
+  max-width: 100%;
   padding: 10px 14px;
   border-radius: 10px;
   font-size: 14px;
@@ -224,6 +250,25 @@ export default {
   background: #409eff;
   color: #fff;
   margin-right: 10px;
+}
+.msg-content {
+  display: flex;
+  flex-direction: column;
+  width: 50%;
+}
+.msg-row.user .msg-content {
+  align-items: flex-end;
+}
+.msg-row.assistant .msg-content {
+  margin-left: 10px;
+}
+.msg-time {
+  font-size: 11px;
+  color: #909399;
+  margin-top: 4px;
+}
+.msg-row.user .msg-time {
+  text-align: right;
 }
 .msg-row.assistant .msg-avatar {
   margin-right: 0;

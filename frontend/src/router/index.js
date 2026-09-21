@@ -59,6 +59,12 @@ export const portalRoutes = [
         name: 'PortalPersonalCenter',
         component: () => import('@/views/portal/personal_center'),
         meta: { title: '个人中心', icon: 'el-icon-user-solid' }
+      },
+      {
+        path: 'follow',
+        name: 'PortalFollow',
+        component: () => import('@/views/portal/follow'),
+        meta: { title: '我的随访', icon: 'el-icon-bell' }
       }
     ]
   }
@@ -91,6 +97,12 @@ export const adminRoutes = [
         name: 'AdminPatients',
         component: () => import('@/views/admin/patients'),
         meta: { title: '患者管理', icon: 'el-icon-user', roles: ['admin', 'doctor'] }
+      },
+      {
+        path: 'follow',
+        name: 'AdminFollow',
+        component: () => import('@/views/admin/follow'),
+        meta: { title: '随访管理', icon: 'el-icon-bell', roles: ['admin', 'doctor'] }
       },
       {
         path: 'system',

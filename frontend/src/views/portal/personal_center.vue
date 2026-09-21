@@ -184,9 +184,9 @@ export default {
         const u = res.data && res.data.user ? res.data.user : (res.user || {})
         this.user = { ...this.user, ...u }
         this.roleName = (res.data && res.data.roleName) || res.roleName || '普通用户'
-        // 同步到 sessionStorage，顶栏昵称随之更新
+        // 同步到 sessionStorage，顶栏/AI助手/个人中心都更新
         const stored = getUser() || {}
-        setUser({ ...stored, nickname: this.user.nickname, username: this.user.username })
+        setUser({ ...stored, nickname: this.user.nickname, username: this.user.username, avatar: this.user.avatar })
       })
     },
     // 头像上传：校验类型 → 读取为 dataURL → 弹出裁剪窗口

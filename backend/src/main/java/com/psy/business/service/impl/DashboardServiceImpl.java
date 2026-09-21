@@ -28,6 +28,10 @@ public class DashboardServiceImpl implements DashboardService {
         result.put("scaleDist", dashboardMapper.scaleDist());
         result.put("levelDist", dashboardMapper.levelDist());
         result.put("weekTrend", dashboardMapper.weekTrend());
+        result.put("followTotal", dashboardMapper.followTotal());
+        result.put("followDone", dashboardMapper.followDone());
+        result.put("followOverdue", dashboardMapper.followOverdue());
+        result.put("tagDist", dashboardMapper.tagDist());
         return result;
     }
 }

@@ -33,6 +33,9 @@ public class SysLoginService {
     @Autowired
     private CaptchaService captchaService;
 
+    @Autowired
+    private com.psy.business.mapper.PatientMapper patientMapper;
+
     /**
      * 登录校验：验证码 -> 账号密码 -> 生成令牌
      */
@@ -98,5 +101,14 @@ public class SysLoginService {
         user.setStatus(Constants.STATUS_NORMAL);
         user.setRemark("自助注册用户");
         userMapper.insertUser(user);
+
+        // 自动创建患者档案（仅公众用户）
+        com.psy.business.domain.Patient patient = new com.psy.business.domain.Patient();
+        patient.setUserId(user.getUserId());
+        patient.setPatientName(StringUtils.isEmpty(nickname) ? username : nickname);
+        patient.setSex(StringUtils.isEmpty(sex) ? "2" : sex);
+        patient.setAge(age);
+        patient.setPhone(phone);
+        patientMapper.insertPatient(patient);
     }
 }

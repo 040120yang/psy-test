@@ -1,4 +1,4 @@
-# 区域智能诊疗辅助诊断系统（Regional Intelligent Diagnosis Assistance System）
+# 区域智能诊疗辅助诊断系统（Regional Psychological Testing System）
 
 > 开源协作版：任何人可 fork / clone 共同开发，欢迎提交 Issue 与 Pull Request。
 
@@ -90,7 +90,7 @@ mvn clean package -DskipTests
 java -jar target/psy-test.jar
 ```
 
-启动成功提示：`区域智能诊疗辅助诊断系统后端启动成功，访问地址：http://localhost:8080`
+启动成功提示：`区域心理测试系统后端启动成功，访问地址：http://localhost:8080`
 
 ### 3. 启动前端（端口 8088）
 

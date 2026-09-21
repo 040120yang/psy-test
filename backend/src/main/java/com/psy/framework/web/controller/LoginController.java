@@ -34,6 +34,9 @@ public class LoginController {
     @Autowired
     private SysUserMapper userMapper;
 
+    @Autowired
+    private com.psy.business.mapper.PatientMapper patientMapper;
+
     /**
      * 登录
      */
@@ -102,6 +105,21 @@ public class LoginController {
         update.setAge(body.getAge());
         update.setPhone(phone);
         userMapper.updateUser(update);
+
+        // 同步更新患者档案（没有则新增）
+        com.psy.business.domain.Patient exist = patientMapper.selectPatientByUserId(userId);
+        com.psy.business.domain.Patient patient = new com.psy.business.domain.Patient();
+        patient.setUserId(userId);
+        patient.setPatientName(body.getNickname());
+        patient.setSex(body.getSex());
+        patient.setAge(body.getAge());
+        patient.setPhone(phone);
+        if (exist != null) {
+            patientMapper.updatePatientByUserId(patient);
+        } else {
+            patientMapper.insertPatient(patient);
+        }
+
         return AjaxResult.success("资料修改成功");
     }
 

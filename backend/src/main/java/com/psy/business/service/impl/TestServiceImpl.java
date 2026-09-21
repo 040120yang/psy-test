@@ -38,6 +38,9 @@ public class TestServiceImpl implements TestService {
     @Autowired
     private TestAnswerMapper answerMapper;
 
+    @Autowired
+    private com.psy.business.mapper.FollowUpMapper followUpMapper;
+
     /**
      * 提交答卷：校验 -> 计分 -> 生成报告 -> 落库
      */
@@ -104,6 +107,23 @@ public class TestServiceImpl implements TestService {
             answerList.add(answer);
         }
         answerMapper.batchInsert(answerList);
+
+        // 4.5 中/重度自动生成随访任务（7天后）
+        if (scoreResult.level != null && (scoreResult.level.contains("中度") || scoreResult.level.contains("重度"))) {
+            try {
+                com.psy.business.domain.FollowUp fu = new com.psy.business.domain.FollowUp();
+                fu.setUserId(userId);
+                fu.setRecordId(record.getRecordId());
+                java.util.Calendar cal = java.util.Calendar.getInstance();
+                cal.add(java.util.Calendar.DAY_OF_MONTH, 7);
+                fu.setFollowDate(cal.getTime());
+                fu.setFollowType("线上");
+                fu.setStatus("待随访");
+                followUpMapper.insert(fu);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
 
         // 5. 返回结果
         Map<String, Object> result = new HashMap<>();

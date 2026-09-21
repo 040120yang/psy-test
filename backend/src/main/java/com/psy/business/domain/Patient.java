@@ -35,6 +35,9 @@ public class Patient extends BaseEntity {
     /** 病史/主诉 */
     private String medicalHistory;
 
+    /** 患者标签 */
+    private String tag;
+
     /** 关联用户账号（联查） */
     private String username;
 
@@ -108,6 +111,14 @@ public class Patient extends BaseEntity {
 
     public void setMedicalHistory(String medicalHistory) {
         this.medicalHistory = medicalHistory;
+    }
+
+    public String getTag() {
+        return tag;
+    }
+
+    public void setTag(String tag) {
+        this.tag = tag;
     }
 
     public String getUsername() {

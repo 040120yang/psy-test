@@ -12,6 +12,7 @@
         <result property="idCard"         column="id_card"/>
         <result property="address"        column="address"/>
         <result property="medicalHistory" column="medical_history"/>
+        <result property="tag"            column="tag"/>
         <result property="createTime"     column="create_time"/>
         <result property="updateTime"     column="update_time"/>
         <result property="username"       column="username"/>
@@ -40,8 +41,8 @@
     </select>
 
     <insert id="insertPatient" parameterType="com.psy.business.domain.Patient" useGeneratedKeys="true" keyProperty="patientId">
-        insert into psy_patient (user_id, patient_name, sex, age, phone, id_card, address, medical_history)
-        values (#{userId}, #{patientName}, #{sex}, #{age}, #{phone}, #{idCard}, #{address}, #{medicalHistory})
+        insert into psy_patient (user_id, patient_name, sex, age, phone, id_card, address, medical_history, tag)
+        values (#{userId}, #{patientName}, #{sex}, #{age}, #{phone}, #{idCard}, #{address}, #{medicalHistory}, #{tag})
     </insert>
 
     <update id="updatePatient" parameterType="com.psy.business.domain.Patient">
@@ -55,7 +56,23 @@
             <if test="idCard != null">id_card = #{idCard},</if>
             <if test="address != null">address = #{address},</if>
             <if test="medicalHistory != null">medical_history = #{medicalHistory},</if>
+            <if test="tag != null">tag = #{tag},</if>
         </set>
         where patient_id = #{patientId}
     </update>
+
+    <update id="updatePatientByUserId" parameterType="com.psy.business.domain.Patient">
+        update psy_patient
+        <set>
+            <if test="patientName != null">patient_name = #{patientName},</if>
+            <if test="sex != null">sex = #{sex},</if>
+            <if test="age != null">age = #{age},</if>
+            <if test="phone != null">phone = #{phone},</if>
+        </set>
+        where user_id = #{userId}
+    </update>
+
+    <select id="selectPatientByUserId" resultMap="PatientResult">
+        select * from psy_patient where user_id = #{userId} limit 1
+    </select>
 </mapper>

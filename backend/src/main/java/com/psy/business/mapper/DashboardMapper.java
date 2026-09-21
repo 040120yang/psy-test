@@ -44,4 +44,18 @@ public interface DashboardMapper {
             "where create_time >= date_sub(curdate(), interval 6 day) " +
             "group by date(create_time) order by day")
     List<Map<String, Object>> weekTrend();
+
+    /** 随访统计 */
+    @Select("select count(1) from psy_follow_up")
+    int followTotal();
+
+    @Select("select count(1) from psy_follow_up where status = '已完成'")
+    int followDone();
+
+    @Select("select count(1) from psy_follow_up where status = '待随访' and follow_date < curdate()")
+    int followOverdue();
+
+    /** 患者标签统计 */
+    @Select("select ifnull(tag, '未分类') as name, count(1) as value from psy_patient group by tag")
+    List<Map<String, Object>> tagDist();
 }

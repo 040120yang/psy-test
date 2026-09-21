@@ -27,6 +27,12 @@ public interface PatientMapper {
     /** 修改患者 */
     int updatePatient(Patient patient);
 
+    /** 根据用户ID更新患者档案 */
+    int updatePatientByUserId(Patient patient);
+
+    /** 根据用户ID查询患者 */
+    Patient selectPatientByUserId(@Param("userId") Long userId);
+
     /** 删除患者 */
     @Delete("delete from psy_patient where patient_id = #{patientId}")
     int deletePatientById(@Param("patientId") Long patientId);

@@ -22,6 +22,9 @@ public class PatientServiceImpl implements PatientService {
     @Autowired
     private PatientMapper patientMapper;
 
+    @Autowired
+    private com.psy.system.mapper.SysUserMapper userMapper;
+
     @Override
     public TableDataInfo list(Patient patient) {
         // 公众用户只能查看/管理关联到自己的患者
@@ -57,6 +60,16 @@ public class PatientServiceImpl implements PatientService {
         if (SecurityUtils.isUser() && exist.getUserId() != null
                 && !SecurityUtils.getUserId().equals(exist.getUserId())) {
             throw new ServiceException("无权限修改该患者信息");
+        }
+        // 同步更新 sys_user（昵称/性别/年龄/手机号）
+        if (exist.getUserId() != null) {
+            com.psy.system.domain.SysUser userUpdate = new com.psy.system.domain.SysUser();
+            userUpdate.setUserId(exist.getUserId());
+            userUpdate.setNickname(patient.getPatientName());
+            userUpdate.setSex(patient.getSex());
+            userUpdate.setAge(patient.getAge());
+            userUpdate.setPhone(patient.getPhone());
+            userMapper.updateUser(userUpdate);
         }
         return patientMapper.updatePatient(patient);
     }

@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.psy.business.mapper.FollowUpMapper">
+
+    <select id="selectList" resultType="com.psy.business.domain.FollowUp">
+        SELECT f.*, u.username, u.nickname, s.scale_name, r.level
+        FROM psy_follow_up f
+        LEFT JOIN sys_user u ON f.user_id = u.user_id
+        LEFT JOIN psy_test_record r ON f.record_id = r.record_id
+        LEFT JOIN psy_scale s ON r.scale_id = s.scale_id
+        WHERE 1=1
+        <if test="userId != null">AND f.user_id = #{userId}</if>
+        <if test="status != null and status != ''">AND f.status = #{status}</if>
+        ORDER BY f.follow_date DESC, f.create_time DESC
+    </select>
+
+    <select id="selectById" resultType="com.psy.business.domain.FollowUp">
+        SELECT f.*, u.username, u.nickname, s.scale_name, r.level
+        FROM psy_follow_up f
+        LEFT JOIN sys_user u ON f.user_id = u.user_id
+        LEFT JOIN psy_test_record r ON f.record_id = r.record_id
+        LEFT JOIN psy_scale s ON r.scale_id = s.scale_id
+        WHERE f.id = #{id}
+    </select>
+
+    <insert id="insert" parameterType="com.psy.business.domain.FollowUp" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO psy_follow_up (user_id, record_id, doctor_id, follow_date, follow_type, status, symptom_score, doctor_note, next_follow_date)
+        VALUES (#{userId}, #{recordId}, #{doctorId}, #{followDate}, #{followType}, #{status}, #{symptomScore}, #{doctorNote}, #{nextFollowDate})
+    </insert>
+
+    <update id="update" parameterType="com.psy.business.domain.FollowUp">
+        UPDATE psy_follow_up
+        <set>
+            <if test="followDate != null">follow_date = #{followDate},</if>
+            <if test="followType != null">follow_type = #{followType},</if>
+            <if test="status != null">status = #{status},</if>
+            <if test="symptomScore != null">symptom_score = #{symptomScore},</if>
+            <if test="doctorNote != null">doctor_note = #{doctorNote},</if>
+            <if test="nextFollowDate != null">next_follow_date = #{nextFollowDate},</if>
+        </set>
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteById">
+        DELETE FROM psy_follow_up WHERE id = #{id}
+    </delete>
+
+    <select id="selectOverdue" resultType="com.psy.business.domain.FollowUp">
+        SELECT f.*, u.username, u.nickname, s.scale_name, r.level
+        FROM psy_follow_up f
+        LEFT JOIN sys_user u ON f.user_id = u.user_id
+        LEFT JOIN psy_test_record r ON f.record_id = r.record_id
+        LEFT JOIN psy_scale s ON r.scale_id = s.scale_id
+        WHERE f.status = '待随访' AND f.follow_date &lt; CURDATE()
+        ORDER BY f.follow_date ASC
+    </select>
+
+</mapper>

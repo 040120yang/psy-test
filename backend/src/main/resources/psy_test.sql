@@ -11,11 +11,34 @@
  Target Server Version : 80012 (8.0.12)
  File Encoding         : 65001
 
- Date: 20/09/2026 16:56:29
+ Date: 21/09/2026 09:02:41
 */
 
 SET NAMES utf8mb4;
 SET FOREIGN_KEY_CHECKS = 0;
+
+-- ----------------------------
+-- Table structure for psy_follow_up
+-- ----------------------------
+DROP TABLE IF EXISTS `psy_follow_up`;
+CREATE TABLE `psy_follow_up`  (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '随访ID',
+  `user_id` bigint(20) NOT NULL COMMENT '随访用户ID',
+  `record_id` bigint(20) NULL DEFAULT NULL COMMENT '关联测评记录ID',
+  `doctor_id` bigint(20) NULL DEFAULT NULL COMMENT '负责医生ID',
+  `follow_date` date NOT NULL COMMENT '随访日期',
+  `follow_type` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT '线上' COMMENT '随访方式',
+  `status` varchar(20) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT '待随访' COMMENT '随访状态',
+  `symptom_score` int(11) NULL DEFAULT NULL COMMENT '症状自评(0-10)',
+  `doctor_note` varchar(1000) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '医生随访记录',
+  `next_follow_date` date NULL DEFAULT NULL COMMENT '下次随访日期',
+  `create_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  PRIMARY KEY (`id`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '随访管理表' ROW_FORMAT = DYNAMIC;
+
+-- ----------------------------
+-- Records of psy_follow_up
+-- ----------------------------
 
 -- ----------------------------
 -- Table structure for psy_patient
@@ -30,7 +53,8 @@ CREATE TABLE `psy_patient`  (
   `phone` varchar(11) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '联系电话',
   `id_card` varchar(18) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '身份证号',
   `address` varchar(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '联系地址',
-  `medical_history` varchar(1000) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '病史/主诉',
+  `medical_history` varchar(1000),
+  `tag` varchar(50) NULL DEFAULT NULL COMMENT '患者标签' CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci NULL DEFAULT NULL COMMENT '病史/主诉',
   `create_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
   `update_time` datetime NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
   PRIMARY KEY (`patient_id`) USING BTREE,
@@ -404,6 +428,24 @@ INSERT INTO `psy_test_record` VALUES (8, 4, 3, 79, 79.0, '重度症状', '存在
 INSERT INTO `psy_test_record` VALUES (9, 5, 5, 8, 8.0, '正常', '测评完成，请结合自身情况关注心理健康。', '1', '2026-09-20 08:29:43');
 INSERT INTO `psy_test_record` VALUES (10, 5, 4, 53, 53.0, '轻度睡眠问题', '存在轻度睡眠问题。建议固定就寝与起床时间，睡前避免咖啡浓茶与剧烈运动，可通过温水泡脚、听轻音乐等方式助眠。', '1', '2026-09-20 11:59:39');
 
+-- ----------------------------
+-- Table structure for psy_follow_up
+-- ----------------------------
+DROP TABLE IF EXISTS `psy_follow_up`;
+CREATE TABLE `psy_follow_up`  (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '随访ID',
+  `user_id` bigint(20) NOT NULL COMMENT '随访用户ID',
+  `record_id` bigint(20) NULL DEFAULT NULL COMMENT '关联测评记录ID',
+  `doctor_id` bigint(20) NULL DEFAULT NULL COMMENT '负责医生ID',
+  `follow_date` date NOT NULL COMMENT '随访日期',
+  `follow_type` varchar(20) NULL DEFAULT '线上' COMMENT '随访方式',
+  `status` varchar(20) NULL DEFAULT '待随访' COMMENT '随访状态',
+  `symptom_score` int(11) NULL DEFAULT NULL COMMENT '症状自评(0-10)',
+  `doctor_note` varchar(1000) NULL DEFAULT NULL COMMENT '医生随访记录',
+  `next_follow_date` date NULL DEFAULT NULL COMMENT '下次随访日期',
+  `create_time` datetime NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  PRIMARY KEY (`id`) USING BTREE
+) ENGINE = InnoDB AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_general_ci COMMENT = '随访管理表' ROW_FORMAT = DYNAMIC;
 -- ----------------------------
 -- Table structure for sys_role
 -- ----------------------------

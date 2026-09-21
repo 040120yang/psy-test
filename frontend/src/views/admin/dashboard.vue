@@ -15,6 +15,33 @@
       </el-col>
     </el-row>
 
+    <el-row :gutter="16" class="stat-cards" style="margin-top: 16px;">
+      <el-col :span="6">
+        <div class="stat-card" style="borderTopColor:#409EFF">
+          <div class="stat-value">{{ followTotal }}</div>
+          <div class="stat-label">随访总数</div>
+        </div>
+      </el-col>
+      <el-col :span="6">
+        <div class="stat-card" style="borderTopColor:#67C23A">
+          <div class="stat-value">{{ followDone }}</div>
+          <div class="stat-label">已完成</div>
+        </div>
+      </el-col>
+      <el-col :span="6">
+        <div class="stat-card" style="borderTopColor:#E6A23C">
+          <div class="stat-value">{{ followOverdue }}</div>
+          <div class="stat-label">逾期未随访</div>
+        </div>
+      </el-col>
+      <el-col :span="6">
+        <div class="stat-card" style="borderTopColor:#909399">
+          <div class="stat-value">{{ followRate }}%</div>
+          <div class="stat-label">完成率</div>
+        </div>
+      </el-col>
+    </el-row>
+
     <el-row :gutter="16" class="chart-row">
       <el-col :span="12">
         <el-card shadow="never">
@@ -51,7 +78,15 @@ export default {
         { label: '量表总数', value: 0, color: '#E6A23C' },
         { label: '患者总数', value: 0, color: '#909399' }
       ],
-      todayCount: 0
+      todayCount: 0,
+      followTotal: 0,
+      followDone: 0,
+      followOverdue: 0
+    }
+  },
+  computed: {
+    followRate() {
+      return this.followTotal > 0 ? Math.round(this.followDone * 100 / this.followTotal) : 0
     }
   },
   mounted() {
@@ -66,6 +101,9 @@ export default {
         this.cards[2].value = data.scaleCount
         this.cards[3].value = data.patientCount
         this.todayCount = data.todayCount
+        this.followTotal = data.followTotal || 0
+        this.followDone = data.followDone || 0
+        this.followOverdue = data.followOverdue || 0
         this.renderScaleChart(data.scaleDist || [])
         this.renderLevelChart(data.levelDist || [])
         this.renderTrendChart(data.weekTrend || [])

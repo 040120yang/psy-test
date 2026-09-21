@@ -17,9 +17,19 @@
           <template slot-scope="scope">{{ { 0: '男', 1: '女', 2: '未知' }[scope.row.sex] }}</template>
         </el-table-column>
         <el-table-column prop="age" label="年龄" width="70" align="center" />
-        <el-table-column prop="phone" label="联系电话" width="130" />
+        <el-table-column label="联系电话" width="130">
+          <template slot-scope="scope">
+            {{ scope.row.phone ? scope.row.phone.replace(/(\d{3})\d{4}(\d{4})/, '$1****$2') : '-' }}
+          </template>
+        </el-table-column>
         <el-table-column prop="address" label="联系地址" min-width="150" show-overflow-tooltip />
         <el-table-column prop="medicalHistory" label="病史/主诉" min-width="200" show-overflow-tooltip />
+        <el-table-column prop="tag" label="标签" width="120">
+          <template slot-scope="scope">
+            <el-tag v-if="scope.row.tag" size="small">{{ scope.row.tag }}</el-tag>
+            <span v-else style="color:#909399;">未分类</span>
+          </template>
+        </el-table-column>
         <el-table-column prop="username" label="关联用户" width="110" align="center" />
         <el-table-column prop="createTime" label="建档时间" width="160" align="center" />
         <el-table-column label="操作" width="140" align="center">
@@ -67,6 +77,15 @@
         </el-form-item>
         <el-form-item label="病史/主诉">
           <el-input v-model="form.medicalHistory" type="textarea" :rows="3" placeholder="病史或主诉描述" />
+        </el-form-item>
+        <el-form-item label="患者标签">
+          <el-select v-model="form.tag" clearable placeholder="选择标签">
+            <el-option label="焦虑" value="焦虑" />
+            <el-option label="抑郁" value="抑郁" />
+            <el-option label="失眠" value="失眠" />
+            <el-option label="强迫" value="强迫" />
+            <el-option label="正常" value="正常" />
+          </el-select>
         </el-form-item>
       </el-form>
       <div slot="footer">
