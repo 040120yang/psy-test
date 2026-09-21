@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="app-wrapper">
     <!-- 侧边栏 -->
     <div class="sidebar-container">

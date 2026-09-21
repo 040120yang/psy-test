@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="register-container">
     <div class="register-card">
       <div class="register-title">

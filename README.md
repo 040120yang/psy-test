@@ -1,4 +1,4 @@
-﻿# 区域智能诊疗辅助诊断系统（Regional Intelligent Diagnosis Assistance System）
+# 区域智能诊疗辅助诊断系统（Regional Intelligent Diagnosis Assistance System）
 
 > 开源协作版：任何人可 fork / clone 共同开发，欢迎提交 Issue 与 Pull Request。
 

@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="portal-wrapper">
     <!-- 用户端顶栏 -->
     <div class="portal-header">

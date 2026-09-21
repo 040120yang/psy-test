@@ -1,4 +1,4 @@
-﻿<template>
+<template>
   <div class="portal-home">
     <!-- 星空交互式粒子背景容器（原版 three.js 渲染结果挂载于此） -->
     <div ref="starContainer" class="star-container"></div>

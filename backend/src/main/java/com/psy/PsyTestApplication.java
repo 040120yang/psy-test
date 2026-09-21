@@ -1,4 +1,4 @@
-﻿package com.psy;
+package com.psy;
 
 import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
