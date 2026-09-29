@@ -1,27 +1,29 @@
-import { getToken, removeToken, removeUser } from '@/utils/auth'
-import router from './router'
+import NProgress from 'nprogress'
+import router from '@/router'
+import { getToken, getUser, removeToken, removeUser } from '@/utils/auth'
 
-/**
- * 路由守卫：未登录跳转登录页
- */
-const whiteList = ['/login', '/register']
+NProgress.configure({ showSpinner: false })
+const whiteList = ['/login', '/register', '/404']
 
-router.beforeEach((to, from, next) => {
-  if (getToken()) {
-    if (to.path === '/login') {
-      next({ path: '/' })
-    } else {
-      next()
-    }
-  } else {
-    if (whiteList.indexOf(to.path) !== -1) {
-      next()
-    } else {
-      next(`/login?redirect=${to.fullPath}`)
-    }
+router.beforeEach((to) => {
+  NProgress.start()
+  document.title = to.meta.title ? `${to.meta.title} - 区域智能诊疗辅助诊断系统` : '区域智能诊疗辅助诊断系统'
+  const token = getToken()
+  if (!token) {
+    if (whiteList.includes(to.path)) return true
+    return `/login?redirect=${encodeURIComponent(to.fullPath)}`
   }
+  if (to.path === '/login') return '/'
+  const user = getUser()
+  if (!user) {
+    removeToken()
+    return `/login?redirect=${encodeURIComponent(to.fullPath)}`
+  }
+  const roles = to.matched.flatMap(item => item.meta?.roles || [])
+  const current = user.roles?.[0]
+  if (roles.length && current && !roles.includes(current)) return '/'
+  return true
 })
 
-router.afterEach(() => {
-  // 预留：记录历史
-})
+router.afterEach(() => NProgress.done())
+router.onError(() => NProgress.done())

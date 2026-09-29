@@ -1,213 +1,46 @@
 <template>
-  <div class="app-wrapper">
-    <!-- 侧边栏 -->
-    <div class="sidebar-container">
-      <div class="sidebar-logo">
-        <span class="logo-text">区域智能诊疗辅助诊断系统</span>
-        <span class="logo-sub">管理后台</span>
-      </div>
-      <el-menu
-        :default-active="activeMenu"
-        :collapse="false"
-        background-color="#304156"
-        text-color="#bfcbd9"
-        active-text-color="#409EFF"
-        router
-        unique-opened
-      >
-        <template v-for="item in menuRoutes">
-          <!-- 子菜单 -->
-          <el-submenu
-            v-if="!item.hidden && item.children && visibleChildren(item).length > 0"
-            :key="item.path"
-            :index="'/admin/' + item.path"
-          >
-            <template slot="title">
-              <i :class="itemMeta(item).icon"></i>
-              <span>{{ itemMeta(item).title }}</span>
-            </template>
-            <el-menu-item
-              v-for="child in visibleChildren(item)"
-              :key="child.path"
-              :index="'/admin/' + item.path + '/' + child.path"
-            >
-              <i :class="child.meta && child.meta.icon"></i>
-              <span slot="title">{{ child.meta && child.meta.title }}</span>
-            </el-menu-item>
-          </el-submenu>
-
-          <!-- 直接菜单项 -->
-          <el-menu-item
-            v-else-if="!item.hidden && item.children && visibleChildren(item).length === 0"
-            :key="item.path"
-            :index="'/admin/' + item.path"
-          >
-            <i :class="itemMeta(item).icon"></i>
-            <span slot="title">{{ itemMeta(item).title }}</span>
-          </el-menu-item>
-          <el-menu-item v-else-if="!item.hidden" :key="item.path" :index="'/admin/' + item.path">
-            <i :class="itemMeta(item).icon"></i>
-            <span slot="title">{{ itemMeta(item).title }}</span>
-          </el-menu-item>
+  <div class="admin-shell">
+    <aside class="admin-aside" :class="{ collapsed }">
+      <div class="aside-logo"><AppLogo light /></div>
+      <el-menu :default-active="$route.path" router :collapse="collapsed" class="admin-menu" background-color="transparent" text-color="rgba(255,255,255,.72)" active-text-color="#fff">
+        <el-menu-item index="/admin/dashboard"><el-icon><DataAnalysis /></el-icon><template #title>系统概览</template></el-menu-item>
+        <el-menu-item index="/admin/records"><el-icon><Document /></el-icon><template #title>测评记录</template></el-menu-item>
+        <el-menu-item index="/admin/patients"><el-icon><User /></el-icon><template #title>患者管理</template></el-menu-item>
+        <el-menu-item index="/admin/follow"><el-icon><Bell /></el-icon><template #title>随访管理</template></el-menu-item>
+        <template v-if="isAdmin">
+          <div class="menu-caption">系统维护</div>
+          <el-menu-item index="/admin/knowledge"><el-icon><Reading /></el-icon><template #title>知识库</template></el-menu-item>
+          <el-sub-menu index="/admin/system"><template #title><el-icon><Setting /></el-icon><span>系统管理</span></template><el-menu-item index="/admin/system/user">用户管理</el-menu-item><el-menu-item index="/admin/system/scale">量表管理</el-menu-item><el-menu-item index="/admin/system/question">题目管理</el-menu-item></el-sub-menu>
+          <el-sub-menu index="/admin/logs"><template #title><el-icon><List /></el-icon><span>日志管理</span></template><el-menu-item index="/admin/logs/login">登录日志</el-menu-item><el-menu-item index="/admin/logs/oper">操作日志</el-menu-item></el-sub-menu>
         </template>
       </el-menu>
-    </div>
-
-    <!-- 主区域 -->
-    <div class="main-container">
-      <div class="navbar">
-        <div class="breadcrumb">
-          <el-breadcrumb separator="/">
-            <el-breadcrumb-item :to="{ path: '/admin/dashboard' }">首页</el-breadcrumb-item>
-            <el-breadcrumb-item v-if="$route.meta.title">{{ $route.meta.title }}</el-breadcrumb-item>
-          </el-breadcrumb>
-        </div>
-        <el-dropdown class="user-dropdown" @command="handleCommand">
-          <span class="user-info">
-            <i class="el-icon-user-solid"></i>
-            {{ user.nickname || user.username || '用户' }}
-            <span class="role-tag">{{ roleName }}</span>
-            <i class="el-icon-arrow-down"></i>
-          </span>
-          <el-dropdown-menu slot="dropdown">
-            <el-dropdown-item command="logout">退出登录</el-dropdown-item>
-          </el-dropdown-menu>
+      <button class="collapse-btn" @click="collapsed=!collapsed"><el-icon><Fold v-if="!collapsed"/><Expand v-else/></el-icon></button>
+    </aside>
+    <section class="admin-main" :class="{ collapsed }">
+      <header class="admin-header">
+        <div><div class="crumb">管理后台 / {{ $route.meta.title || '系统概览' }}</div><h2>{{ $route.meta.title || '系统概览' }}</h2></div>
+        <el-dropdown trigger="click" @command="handleCommand">
+          <button class="admin-user"><el-avatar :size="34" class="avatar">{{ initial }}</el-avatar><span><strong>{{ user.nickname || user.username }}</strong><small>{{ roleName }}</small></span><el-icon><ArrowDown /></el-icon></button>
+          <template #dropdown><el-dropdown-menu><el-dropdown-item command="portal" v-if="isAdmin">切换用户端</el-dropdown-item><el-dropdown-item divided command="logout">退出登录</el-dropdown-item></el-dropdown-menu></template>
         </el-dropdown>
-      </div>
-
-      <div class="app-main">
-        <router-view />
-      </div>
-    </div>
+      </header>
+      <main class="admin-content"><router-view /></main>
+    </section>
   </div>
 </template>
-
-<script>
-import { adminRoutes } from '@/router'
+<script setup>
+import { ref, computed } from 'vue'
+import { useRouter } from 'vue-router'
+import { ElMessage } from 'element-plus'
+import AppLogo from '@/components/AppLogo.vue'
 import { getUser, removeToken, removeUser } from '@/utils/auth'
 import { logout } from '@/api/login'
-
-export default {
-  name: 'AdminLayout',
-  data() {
-    return {
-      user: getUser() || {},
-      roleKey: (getUser() && getUser().roles && getUser().roles[0]) || ''
-    }
-  },
-  computed: {
-    activeMenu() {
-      const route = this.$route
-      const { meta, path } = route
-      if (meta && meta.activeMenu) {
-        return meta.activeMenu
-      }
-      return path
-    },
-    menuRoutes() {
-      // 取 /admin 路由下的子菜单项
-      const admin = adminRoutes[0]
-      return admin ? admin.children : []
-    },
-    roleName() {
-      const map = { admin: '系统管理员', doctor: '临床医护人员', user: '公众用户' }
-      return map[this.roleKey] || '未知角色'
-    }
-  },
-  methods: {
-    itemMeta(item) {
-      if (item.meta) return item.meta
-      if (item.children && item.children.length && item.children[0].meta) return item.children[0].meta
-      return {}
-    },
-    visibleChildren(item) {
-      if (!item.children) return []
-      return item.children.filter(child => !child.hidden && this.hasPermission(child.meta && child.meta.roles))
-    },
-    hasPermission(roles) {
-      if (!roles || roles.length === 0) return true
-      return roles.indexOf(this.roleKey) !== -1
-    },
-    handleCommand(command) {
-      if (command === 'logout') {
-        logout().finally(() => {
-          removeToken()
-          removeUser()
-          this.$router.push('/login')
-        })
-      }
-    }
-  }
-}
+const router=useRouter(); const collapsed=ref(false); const user=ref(getUser()||{})
+const isAdmin=computed(()=>user.value.roles?.[0]==='admin')
+const initial=computed(()=>(user.value.nickname||user.value.username||'管').slice(0,1))
+const roleName=computed(()=>user.value.roles?.[0]==='admin'?'系统管理员':'临床医护人员')
+const handleCommand=async command=>{if(command==='portal')return router.push('/portal/home');if(command==='logout'){try{await logout()}finally{removeToken();removeUser();ElMessage.success('已退出登录');router.replace('/login')}}}
 </script>
-
 <style scoped>
-.app-wrapper {
-  height: 100%;
-  display: flex;
-}
-.sidebar-container {
-  width: 210px;
-  background-color: #304156;
-  height: 100%;
-  flex-shrink: 0;
-  overflow-y: auto;
-}
-.sidebar-logo {
-  height: 60px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  background-color: #2b3a4b;
-}
-.logo-text {
-  color: #fff;
-  font-size: 15px;
-  font-weight: bold;
-  letter-spacing: 1px;
-}
-.logo-sub {
-  color: #8a97a8;
-  font-size: 11px;
-  margin-top: 2px;
-}
-.sidebar-container .el-menu {
-  border-right: none;
-}
-.main-container {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-}
-.navbar {
-  height: 50px;
-  background: #fff;
-  box-shadow: 0 1px 4px rgba(0, 21, 41, 0.08);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 20px;
-  z-index: 5;
-}
-.user-info {
-  cursor: pointer;
-  color: #333;
-  font-size: 14px;
-}
-.role-tag {
-  margin-left: 6px;
-  padding: 1px 8px;
-  border-radius: 3px;
-  background: #ecf5ff;
-  color: #409eff;
-  font-size: 12px;
-}
-.app-main {
-  flex: 1;
-  padding: 16px;
-  background: #f0f2f5;
-  overflow-y: auto;
-}
+.admin-shell{min-height:100vh;background:var(--bg)}.admin-aside{position:fixed;inset:0 auto 0 0;width:248px;display:flex;flex-direction:column;background:linear-gradient(180deg,#102a43,#173f56);transition:width .22s ease;z-index:20}.admin-aside.collapsed{width:76px}.aside-logo{height:74px;display:grid;place-items:center;border-bottom:1px solid rgba(255,255,255,.08);overflow:hidden}.admin-menu{flex:1;border:0;padding:14px 10px}.admin-menu:not(.el-menu--collapse){width:248px}.admin-menu .el-menu-item,.admin-menu :deep(.el-sub-menu__title){height:46px;margin:3px 0;border-radius:10px}.admin-menu .el-menu-item:hover,.admin-menu :deep(.el-sub-menu__title:hover){background:rgba(255,255,255,.08)!important}.admin-menu .el-menu-item.is-active{background:rgba(255,255,255,.15)!important;box-shadow:inset 3px 0 0 #79c7c0}.menu-caption{padding:18px 14px 6px;color:rgba(255,255,255,.35);font-size:11px;letter-spacing:1px}.collapse-btn{height:48px;border:0;border-top:1px solid rgba(255,255,255,.08);background:transparent;color:rgba(255,255,255,.7);cursor:pointer}.admin-main{margin-left:248px;min-height:100vh;transition:margin-left .22s ease}.admin-main.collapsed{margin-left:76px}.admin-header{height:78px;display:flex;align-items:center;justify-content:space-between;padding:0 28px;background:rgba(255,255,255,.9);border-bottom:1px solid var(--line);backdrop-filter:blur(12px);position:sticky;top:0;z-index:15}.crumb{color:var(--text-3);font-size:12px}.admin-header h2{margin:4px 0 0;font-size:19px}.admin-user{display:flex;align-items:center;gap:10px;padding:6px 10px;border:1px solid var(--line);border-radius:12px;background:#fff;cursor:pointer}.avatar{background:var(--primary)}.admin-user span{display:flex;flex-direction:column;align-items:flex-start;line-height:1.2}.admin-user small{color:var(--text-3);font-size:11px}.admin-content{padding:26px 28px 50px}@media(max-width:900px){.admin-aside{width:76px}.admin-aside .copy,.admin-menu:not(.el-menu--collapse) .el-menu-item span,.menu-caption{display:none}.admin-menu{width:76px}.admin-main{margin-left:76px}.admin-header,.admin-content{padding-left:16px;padding-right:16px}}
 </style>

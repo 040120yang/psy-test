@@ -1,17 +1,6 @@
 <template>
-  <div id="app">
-    <router-view />
-  </div>
+  <router-view />
 </template>
 
-<script>
-export default {
-  name: 'App'
-}
+<script setup>
 </script>
-
-<style>
-#app {
-  height: 100%;
-}
-</style>

@@ -1,37 +1,6 @@
 <template>
-  <div class="error-page">
-    <div class="error-content">
-      <h1>404</h1>
-      <p>抱歉，您访问的页面不存在或已被移除</p>
-      <el-button type="primary" @click="$router.push('/')">返回首页</el-button>
-    </div>
-  </div>
+  <div class="not-found"><div class="code">404</div><h1>页面不存在</h1><p>你访问的页面可能已被移动或删除。</p><el-button type="primary" @click="$router.push('/')">返回首页</el-button></div>
 </template>
-
-<script>
-export default {
-  name: 'NotFound'
-}
-</script>
-
 <style scoped>
-.error-page {
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  background: #f0f2f5;
-}
-.error-content {
-  text-align: center;
-}
-.error-content h1 {
-  font-size: 80px;
-  margin: 0;
-  color: #409eff;
-}
-.error-content p {
-  color: #909399;
-  margin: 12px 0 24px;
-}
+.not-found{min-height:100vh;display:grid;place-items:center;align-content:center;text-align:center;background:radial-gradient(circle at 30% 20%,#dcefec,transparent 32%),radial-gradient(circle at 80% 80%,#e5ecff,transparent 34%),#f5f8fa}.code{font-size:110px;font-weight:900;line-height:1;color:var(--primary);opacity:.18}.not-found h1{margin:-10px 0 8px}.not-found p{margin:0 0 22px;color:var(--text-3)}
 </style>

@@ -10,6 +10,7 @@ import org.springframework.jdbc.core.BeanPropertyRowMapper;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -65,11 +66,13 @@ public class BusinessController {
     @GetMapping("/knowledge/list")
     public TableDataInfo knowledgeList(@RequestParam(required = false) String category) {
         String sql = "SELECT * FROM psy_knowledge WHERE status = 1";
+        List<Object> params = new ArrayList<>();
         if (category != null && !category.isEmpty()) {
-            sql += " AND category = '" + category + "'";
+            sql += " AND category = ?";
+            params.add(category);
         }
         sql += " ORDER BY create_time DESC";
-        List<Knowledge> list = jdbcTemplate.query(sql, new BeanPropertyRowMapper<>(Knowledge.class));
+        List<Knowledge> list = jdbcTemplate.query(sql, new BeanPropertyRowMapper<>(Knowledge.class), params.toArray());
         return TableDataInfo.success(list, list.size());
     }
 

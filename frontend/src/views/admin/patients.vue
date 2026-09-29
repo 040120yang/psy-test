@@ -1,174 +1,27 @@
 <template>
-  <div class="patient-page">
-    <el-card shadow="never">
-      <div slot="header" class="toolbar">
-        <div class="filter-bar">
-          <el-input v-model="query.patientName" placeholder="患者姓名" clearable style="width:160px" @keyup.enter.native="loadPatients" />
-          <el-input v-model="query.phone" placeholder="联系电话" clearable style="width:160px" @keyup.enter.native="loadPatients" />
-          <el-button type="primary" icon="el-icon-search" @click="loadPatients">查询</el-button>
-        </div>
-        <el-button type="primary" icon="el-icon-plus" @click="openDialog()">新增患者</el-button>
-      </div>
-
-      <el-table :data="patients" border v-loading="loading">
-        <el-table-column prop="patientId" label="ID" width="60" align="center" />
-        <el-table-column prop="patientName" label="姓名" width="100" />
-        <el-table-column label="性别" width="60" align="center">
-          <template slot-scope="scope">{{ { 0: '男', 1: '女', 2: '未知' }[scope.row.sex] }}</template>
-        </el-table-column>
-        <el-table-column prop="age" label="年龄" width="70" align="center" />
-        <el-table-column label="联系电话" width="130">
-          <template slot-scope="scope">
-            {{ scope.row.phone ? scope.row.phone.replace(/(\d{3})\d{4}(\d{4})/, '$1****$2') : '-' }}
-          </template>
-        </el-table-column>
-        <el-table-column prop="address" label="联系地址" min-width="150" show-overflow-tooltip />
-        <el-table-column prop="medicalHistory" label="病史/主诉" min-width="200" show-overflow-tooltip />
-        <el-table-column prop="tag" label="标签" width="120">
-          <template slot-scope="scope">
-            <el-tag v-if="scope.row.tag" size="small">{{ scope.row.tag }}</el-tag>
-            <span v-else style="color:#909399;">未分类</span>
-          </template>
-        </el-table-column>
-        <el-table-column prop="username" label="关联用户" width="110" align="center" />
-        <el-table-column prop="createTime" label="建档时间" width="160" align="center" />
-        <el-table-column label="操作" width="140" align="center">
-          <template slot-scope="scope">
-            <el-button type="text" size="small" @click="openDialog(scope.row)">编辑</el-button>
-            <el-button type="text" size="small" style="color:#f56c6c" @click="handleDelete(scope.row)">删除</el-button>
-          </template>
-        </el-table-column>
-      </el-table>
-
-      <el-pagination
-        class="pagination"
-        background
-        layout="total, prev, pager, next"
-        :total="total"
-        :page-size="query.pageSize"
-        :current-page.sync="query.pageNum"
-        @current-change="loadPatients"
-      />
-    </el-card>
-
-    <el-dialog :title="form.patientId ? '编辑患者' : '新增患者'" :visible.sync="dialogVisible" width="560px">
-      <el-form ref="patientForm" :model="form" :rules="rules" label-width="90px">
-        <el-form-item label="姓名" prop="patientName">
-          <el-input v-model="form.patientName" placeholder="患者姓名" />
-        </el-form-item>
-        <el-form-item label="性别">
-          <el-radio-group v-model="form.sex">
-            <el-radio label="0">男</el-radio>
-            <el-radio label="1">女</el-radio>
-            <el-radio label="2">未知</el-radio>
-          </el-radio-group>
-        </el-form-item>
-        <el-form-item label="年龄">
-          <el-input-number v-model="form.age" :min="1" :max="120" />
-        </el-form-item>
-        <el-form-item label="联系电话" prop="phone">
-          <el-input v-model="form.phone" placeholder="11位手机号码" />
-        </el-form-item>
-        <el-form-item label="身份证号">
-          <el-input v-model="form.idCard" placeholder="身份证号（选填）" />
-        </el-form-item>
-        <el-form-item label="联系地址">
-          <el-input v-model="form.address" placeholder="联系地址" />
-        </el-form-item>
-        <el-form-item label="病史/主诉">
-          <el-input v-model="form.medicalHistory" type="textarea" :rows="3" placeholder="病史或主诉描述" />
-        </el-form-item>
-        <el-form-item label="患者标签">
-          <el-select v-model="form.tag" clearable placeholder="选择标签">
-            <el-option label="焦虑" value="焦虑" />
-            <el-option label="抑郁" value="抑郁" />
-            <el-option label="失眠" value="失眠" />
-            <el-option label="强迫" value="强迫" />
-            <el-option label="正常" value="正常" />
-          </el-select>
-        </el-form-item>
-      </el-form>
-      <div slot="footer">
-        <el-button @click="dialogVisible = false">取消</el-button>
-        <el-button type="primary" @click="handleSave">确定</el-button>
-      </div>
-    </el-dialog>
+  <div class="page-stack">
+    <PageHeader eyebrow="Patient Management" title="患者管理" description="维护患者档案、联系方式和病史标签。">
+      <template #actions><el-button type="primary" @click="openAdd"><el-icon><Plus /></el-icon>新增患者</el-button></template>
+    </PageHeader>
+    <section class="panel"><div class="panel-head"><el-input v-model="query.patientName" clearable placeholder="患者姓名" style="width:200px"/><el-input v-model="query.phone" clearable placeholder="联系电话" style="width:200px"/><el-button type="primary" @click="load">查询</el-button></div><div class="panel-body"><el-table v-if="rows.length" :data="rows" stripe><el-table-column prop="patientName" label="姓名" min-width="110"/><el-table-column label="性别" width="80"><template #default="{row}">{{ row.sex==='0'?'男':row.sex==='1'?'女':'未知' }}</template></el-table-column><el-table-column prop="age" label="年龄" width="80"/><el-table-column prop="phone" label="联系电话" min-width="130"/><el-table-column prop="tag" label="标签" min-width="110"><template #default="{row}"><el-tag v-if="row.tag" effect="plain">{{ row.tag }}</el-tag><span v-else class="text-muted">-</span></template></el-table-column><el-table-column prop="medicalHistory" label="病史/主诉" min-width="220" show-overflow-tooltip/><el-table-column label="操作" width="140" fixed="right"><template #default="{row}"><el-button text type="primary" @click="openEdit(row)">编辑</el-button><el-button text type="danger" @click="remove(row)">删除</el-button></template></el-table-column></el-table><EmptyPanel v-else title="暂无患者档案"/><el-pagination v-if="total" v-model:current-page="query.pageNum" layout="total, prev, pager, next" :total="total" @current-change="load"/></div></section>
+    <el-dialog v-model="visible" :title="form.patientId?'编辑患者':'新增患者'" width="720px"><el-form :model="form" label-position="top"><div class="form-grid"><el-form-item label="姓名"><el-input v-model="form.patientName"/></el-form-item><el-form-item label="性别"><el-select v-model="form.sex" style="width:100%"><el-option label="男" value="0"/><el-option label="女" value="1"/><el-option label="未知" value="2"/></el-select></el-form-item><el-form-item label="年龄"><el-input-number v-model="form.age" :min="1" :max="120" style="width:100%"/></el-form-item><el-form-item label="联系电话"><el-input v-model="form.phone"/></el-form-item><el-form-item label="身份证号"><el-input v-model="form.idCard"/></el-form-item><el-form-item label="标签"><el-input v-model="form.tag"/></el-form-item></div><el-form-item label="联系地址"><el-input v-model="form.address"/></el-form-item><el-form-item label="病史/主诉"><el-input v-model="form.medicalHistory" type="textarea" :rows="3"/></el-form-item></el-form><template #footer><el-button @click="visible=false">取消</el-button><el-button type="primary" @click="save">保存</el-button></template></el-dialog>
   </div>
 </template>
-
-<script>
+<script setup>
+import { ref, reactive, onMounted } from 'vue'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import PageHeader from '@/components/PageHeader.vue'
+import EmptyPanel from '@/components/EmptyPanel.vue'
 import { listPatient, addPatient, updatePatient, delPatient } from '@/api/patient'
-
-export default {
-  name: 'AdminPatients',
-  data() {
-    return {
-      patients: [],
-      total: 0,
-      loading: false,
-      query: { pageNum: 1, pageSize: 10, patientName: '', phone: '' },
-      dialogVisible: false,
-      form: {},
-      rules: {
-        patientName: [{ required: true, message: '请输入患者姓名', trigger: 'blur' }],
-        phone: [{ pattern: /^1[3-9]\d{9}$/, message: '请输入正确的11位手机号码', trigger: 'blur' }]
-      }
-    }
-  },
-  created() {
-    this.loadPatients()
-  },
-  methods: {
-    loadPatients() {
-      this.loading = true
-      listPatient(this.query).then(res => {
-        this.patients = res.rows || []
-        this.total = res.total || 0
-      }).finally(() => { this.loading = false })
-    },
-    openDialog(row) {
-      this.form = row ? { ...row } : { sex: '2', age: 30 }
-      this.dialogVisible = true
-    },
-    handleSave() {
-      this.$refs.patientForm.validate(valid => {
-        if (!valid) return
-        const req = this.form.patientId ? updatePatient(this.form) : addPatient(this.form)
-        req.then(() => {
-          this.$message.success('保存成功')
-          this.dialogVisible = false
-          this.loadPatients()
-        })
-      })
-    },
-    handleDelete(row) {
-      this.$confirm(`确认删除患者「${row.patientName}」吗？`, '提示', { type: 'warning' })
-        .then(() => delPatient(row.patientId))
-        .then(() => {
-          this.$message.success('删除成功')
-          this.loadPatients()
-        })
-        .catch(() => {})
-    }
-  }
-}
+const rows=ref([]); const total=ref(0); const visible=ref(false); const query=reactive({pageNum:1,pageSize:10,patientName:'',phone:''}); const form=reactive({patientId:null,patientName:'',sex:'2',age:null,phone:'',idCard:'',address:'',medicalHistory:'',tag:''})
+async function load(){const res=await listPatient(query);rows.value=res.rows||[];total.value=res.total||rows.value.length}
+function reset(){Object.assign(form,{patientId:null,patientName:'',sex:'2',age:null,phone:'',idCard:'',address:'',medicalHistory:'',tag:''})}
+function openAdd(){reset();visible.value=true}
+function openEdit(row){Object.assign(form,row);visible.value=true}
+async function save(){if(!form.patientName)return ElMessage.warning('请输入患者姓名');form.patientId?await updatePatient(form):await addPatient(form);ElMessage.success('保存成功');visible.value=false;load()}
+async function remove(row){await ElMessageBox.confirm(`确认删除患者“${row.patientName}”吗？`,'删除确认',{type:'warning'});await delPatient(row.patientId);ElMessage.success('已删除');load()}
+onMounted(load)
 </script>
-
 <style scoped>
-.toolbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-.filter-bar {
-  display: flex;
-  align-items: center;
-}
-.filter-bar .el-input {
-  margin-right: 8px;
-}
-.pagination {
-  margin-top: 16px;
-  text-align: right;
-}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:0 16px}@media(max-width:620px){.form-grid{grid-template-columns:1fr}}
 </style>

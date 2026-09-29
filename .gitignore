@@ -5,3 +5,7 @@ frontend/dist/
 .idea/
 *.iml
 .DS_Store
+runtime/
+frontend/src-vue2-backup/
+frontend/src-vue2-original/
+*.zip

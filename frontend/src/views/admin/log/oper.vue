@@ -1,42 +1,14 @@
 <template>
-  <div class="admin-oper-log">
-    <el-card shadow="never">
-      <div slot="header">
-        <span style="font-size:18px;font-weight:600;">操作日志</span>
-      </div>
-      <el-table :data="list" border stripe>
-        <el-table-column prop="operId" label="ID" width="60" align="center" />
-        <el-table-column prop="title" label="模块" width="120" />
-        <el-table-column prop="operName" label="操作人" width="100" />
-        <el-table-column prop="operUrl" label="请求URL" min-width="200" show-overflow-tooltip />
-        <el-table-column prop="operIp" label="IP" width="130" />
-        <el-table-column prop="status" label="状态" width="80" align="center">
-          <template slot-scope="scope">
-            <el-tag :type="scope.row.status === 0 ? 'success' : 'danger'" size="small">
-              {{ scope.row.status === 0 ? '正常' : '异常' }}
-            </el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column prop="operTime" label="操作时间" width="160" align="center" />
-      </el-table>
-    </el-card>
+  <div class="page-stack">
+    <PageHeader eyebrow="Audit" title="操作日志" description="查看管理端接口操作和异常信息。" />
+    <section class="panel"><div class="panel-head"><div><div class="panel-title">操作记录</div><div class="panel-subtitle">最多显示最近 200 条</div></div><el-button @click="load">刷新</el-button></div><div class="panel-body"><el-table v-if="rows.length" :data="rows" stripe><el-table-column prop="title" label="模块" width="130"/><el-table-column prop="operName" label="操作人" width="120"/><el-table-column prop="operUrl" label="请求地址" min-width="220"/><el-table-column prop="operIp" label="IP地址" width="140"/><el-table-column label="状态" width="100"><template #default="{row}"><StatusTag :text="row.status===0?'成功':'异常'"/></template></el-table-column><el-table-column prop="errorMsg" label="异常信息" min-width="180" show-overflow-tooltip/><el-table-column prop="operTime" label="操作时间" width="180"/></el-table><EmptyPanel v-else title="暂无操作日志"/></div></section>
   </div>
 </template>
-
-<script>
-import request from '@/utils/request'
-export default {
-  name: 'AdminOperLog',
-  data() {
-    return { list: [] }
-  },
-  mounted() { this.load() },
-  methods: {
-    load() {
-      request({ url: '/business/log/oper', method: 'get' }).then(res => {
-        this.list = res.rows || []
-      })
-    }
-  }
-}
+<script setup>
+import { ref, onMounted } from 'vue'
+import PageHeader from '@/components/PageHeader.vue'
+import StatusTag from '@/components/StatusTag.vue'
+import EmptyPanel from '@/components/EmptyPanel.vue'
+import { listOperLogs } from '@/api/business'
+const rows=ref([]); async function load(){const res=await listOperLogs();rows.value=res.rows||[]}; onMounted(load)
 </script>

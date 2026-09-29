@@ -1,236 +1,33 @@
 <template>
-  <div class="result-page">
-    <el-card shadow="never" v-if="record">
-      <div slot="header">
-        <span class="result-title">测评报告 - {{ record.scaleName }}</span>
-        <el-tag size="small" style="margin-left:8px">{{ record.scaleCode }}</el-tag>
+  <div v-loading="loading" class="page-stack">
+    <PageHeader eyebrow="Assessment Report" :title="record?.scaleName || '测评报告'" description="以下结果用于心理健康筛查和健康建议，不能替代专业医疗诊断。" >
+      <template #actions><el-button @click="window.print()"><el-icon><Printer /></el-icon> 打印报告</el-button><el-button type="primary" @click="$router.push('/portal/records')">查看全部记录</el-button></template>
+    </PageHeader>
+    <section v-if="record" class="panel panel-body">
+      <div class="result-hero">
+        <div class="score-ring" :style="{ '--score': Math.min(Number(record.stdScore),100) }"><div class="score-ring-content"><strong>{{ record.stdScore }}</strong><span>标准分</span></div></div>
+        <div><StatusTag :text="record.level" /><h2 style="margin:12px 0 8px">{{ record.scaleName }}测评结果</h2><p class="text-muted" style="line-height:1.9;margin:0">量表编码：{{ record.scaleCode }}　原始粗分：{{ record.rawScore }}　测评时间：{{ record.createTime }}</p><div class="notice mt-20">{{ record.suggestion || '测评已完成，请结合近期情绪、睡眠和生活状态综合判断。' }}</div></div>
       </div>
-
-      <!-- 结果概览 -->
-      <div class="result-overview">
-        <div class="score-box" :style="{ borderColor: levelColor }">
-          <div class="score-label">标准分</div>
-          <div class="score-value" :style="{ color: levelColor }">{{ record.stdScore }}</div>
-          <div class="score-level" :style="{ background: levelColor }">{{ record.level }}</div>
-        </div>
-        <div class="score-meta">
-          <p>量表：{{ record.scaleName }}（{{ record.scaleCode }}）</p>
-          <p>原始粗分：{{ record.rawScore }}</p>
-          <p>测评时间：{{ record.createTime }}</p>
-        </div>
-      </div>
-
-      <!-- 分析建议 -->
-      <div class="advice-box">
-        <div class="advice-title">结果分析与建议</div>
-        <p class="advice-content">{{ record.suggestion }}</p>
-        <el-alert
-          title="本报告仅作心理健康状况参考，不能替代专业医疗诊断。如有明显不适，请及时前往正规医疗机构心理科/精神科就诊，或拨打全国心理援助热线 12356。"
-          type="warning"
-          :closable="false"
-          show-icon
-          style="margin-top:12px"
-        />
-      </div>
-
-      <!-- 医生诊断结论 -->
-      <div v-if="record.doctorConclusion" class="advice-box" style="background:#f5f0ff;border-left:4px solid #9b59b6;">
-        <div class="advice-title" style="color:#9b59b6;">医生诊断结论</div>
-        <p class="advice-content">{{ record.doctorConclusion }}</p>
-      </div>
-      <div v-if="record.doctorAdvice" class="advice-box" style="background:#fff8f0;border-left:4px solid #e86f0c;">
-        <div class="advice-title" style="color:#e86f0c;">医生处方建议</div>
-        <p class="advice-content">{{ record.doctorAdvice }}</p>
-      </div>
-
-      <!-- AI智能诊断 -->
-      <div class="ai-diagnosis-box">
-        <div class="ai-title">
-          <i class="el-icon-cpu" style="color:#9b59b6;margin-right:6px"></i>
-          AI 智能诊断分析
-          <el-button v-if="!aiLoading && !aiResult" type="primary" size="mini" style="margin-left:12px" @click="aiDiagnosis">
-            生成AI诊断分析
-          </el-button>
-          <el-button v-if="aiLoading" type="text" loading>正在生成中，请稍候...</el-button>
-        </div>
-        <div v-if="aiResult" class="ai-result">
-          <p>{{ aiResult }}</p>
-        </div>
-        <div v-if="!aiResult && !aiLoading" class="ai-tip">
-          点击按钮，AI将根据您的测评结果生成个性化的诊断分析与建议
-        </div>
-      </div>
-
-      <!-- 答题明细 -->
-      <div class="detail-title">答题明细</div>
-      <el-table :data="answers" border size="small" max-height="360">
-        <el-table-column type="index" label="题号" width="60" align="center" />
-        <el-table-column prop="content" label="题目" min-width="300" />
-        <el-table-column label="选项分值" width="100" align="center">
-          <template slot-scope="scope">{{ scope.row.optionValue }} 分</template>
-        </el-table-column>
-      </el-table>
-
-      <div class="result-actions">
-        <el-button @click="$router.push('/portal/scales')">返回量表列表</el-button>
-        <el-button type="primary" @click="$router.push('/portal/records')">查看我的测评记录</el-button>
-      </div>
-    </el-card>
-    <el-empty v-else description="正在加载报告..." />
+    </section>
+    <section v-if="isRisk" class="panel"><div class="panel-head"><div><div class="panel-title">风险提示与就医建议</div><div class="panel-subtitle">本结果达到中度或以上风险等级</div></div><el-icon :size="28" color="var(--danger)"><Warning /></el-icon></div><div class="panel-body"><el-alert title="建议尽快联系专业医护人员进行进一步评估" description="如出现自伤、轻生念头或无法控制情绪，请立即联系家人陪同就医，或拨打全国心理援助热线 12356。" type="error" :closable="false" show-icon /></div></section>
+    <section class="soft-grid cols-2">
+      <div class="panel"><div class="panel-head"><div><div class="panel-title">AI 辅助解读</div><div class="panel-subtitle">仅作为健康建议，不构成诊断</div></div><el-button type="primary" plain :loading="aiLoading" @click="aiDiagnosis">生成解读</el-button></div><div class="panel-body"><div v-if="aiResult" style="white-space:pre-wrap;line-height:1.9;color:var(--text-2)">{{ aiResult }}</div><div v-else class="text-muted">点击生成个性化健康建议。系统不会据此自动诊断。</div></div></div>
+      <div class="panel"><div class="panel-head"><div><div class="panel-title">结果说明</div><div class="panel-subtitle">如何使用这份报告</div></div></div><div class="panel-body" style="line-height:2;color:var(--text-2);font-size:13px"><div>1. 对照标准分和等级理解当前状态。</div><div>2. 关注建议中的生活方式和就医提示。</div><div>3. 如需专业帮助，可携带报告咨询医生。</div><div>4. 建议定期复测，观察变化趋势。</div></div></div>
+    </section>
+    <section class="panel"><div class="panel-head"><div><div class="panel-title">答题明细</div><div class="panel-subtitle">共 {{ answers.length }} 道题</div></div></div><div class="panel-body"><el-table :data="answers" stripe><el-table-column type="index" label="#" width="60" align="center" /><el-table-column prop="content" label="题目" min-width="340" /><el-table-column prop="optionValue" label="选项分值" width="110" align="center" /></el-table></div></section>
+    <EmptyPanel v-if="!record&&!loading" title="无法读取报告" description="记录可能已被删除或无权访问" />
   </div>
 </template>
-
-<script>
+<script setup>
+import { ref, computed, onMounted } from 'vue'
+import { useRoute } from 'vue-router'
+import PageHeader from '@/components/PageHeader.vue'
+import StatusTag from '@/components/StatusTag.vue'
+import EmptyPanel from '@/components/EmptyPanel.vue'
 import { getRecordDetail } from '@/api/test'
 import request from '@/utils/request'
-
-const getLevelColor = (name) => {
-  if (name === '正常') return '#67C23A'
-  if (name && name.indexOf('重度睡眠') !== -1) return '#B22222'
-  if (name && name.indexOf('重度焦虑') !== -1) return '#8B0000'
-  if (name && name.indexOf('重度抑郁') !== -1) return '#FF8A80'
-  if (name && name.indexOf('重度') !== -1) return '#ff4d4f'
-  if (name && name.indexOf('中度睡眠') !== -1) return '#FFA940'
-  if (name && name.indexOf('中度焦虑') !== -1) return '#E86F0C'
-  if (name && name.indexOf('中度抑郁') !== -1) return '#FF9800'
-  if (name && name.indexOf('中度') !== -1) return '#FA8C16'
-  if (name && name.indexOf('轻度睡眠') !== -1) return '#FFEB3B'
-  if (name && name.indexOf('轻度焦虑') !== -1) return '#FFD700'
-  if (name && name.indexOf('轻度抑郁') !== -1) return '#F5C518'
-  if (name && name.indexOf('轻度') !== -1) return '#E6A23C'
-  return '#909399'
-}
-
-export default {
-  name: 'PortalResult',
-  data() {
-    return {
-      recordId: Number(this.$route.query.recordId),
-      record: null,
-      answers: [],
-      aiLoading: false,
-      aiResult: ''
-    }
-  },
-  computed: {
-    levelColor() {
-      return getLevelColor(this.record.level)
-    }
-  },
-  created() {
-    this.loadDetail()
-  },
-  methods: {
-    loadDetail() {
-      getRecordDetail(this.recordId).then(res => {
-        this.record = res.data.record
-        this.answers = res.data.answers || []
-      })
-    },
-    aiDiagnosis() {
-      this.aiLoading = true
-      const prompt = `我刚完成了${this.record.scaleName}测评，标准分是${this.record.stdScore}，结果等级是${this.record.level}。请根据我的测评结果，给出专业的诊断分析、原因分析和具体的改善建议，分点列出。`
-      request({
-        url: '/coze/chat',
-        method: 'post',
-        data: { message: prompt }
-      }).then(res => {
-        this.aiResult = res.reply || res.data || res.msg || 'AI生成分析完成'
-      }).catch(() => {
-        this.$message.error('AI生成失败，请稍后重试')
-      }).finally(() => {
-        this.aiLoading = false
-      })
-    }
-  }
-}
+const route=useRoute(); const loading=ref(true); const record=ref(null); const answers=ref([]); const aiLoading=ref(false); const aiResult=ref(''); const window=globalThis.window
+const isRisk=computed(()=>record.value?.level?.includes('中度')||record.value?.level?.includes('重度'))
+async function aiDiagnosis(){aiLoading.value=true;try{const prompt=`我刚完成了${record.value.scaleName}测评，标准分是${record.value.stdScore}，结果等级是${record.value.level}。请给出原因分析、生活建议和是否需要就医的提示，分点列出。`;const res=await request({url:'/coze/chat',method:'post',data:{message:prompt}});aiResult.value=res.reply||res.data||res.msg||'生成完成'}finally{aiLoading.value=false}}
+onMounted(async()=>{try{const res=await getRecordDetail(Number(route.query.recordId));record.value=res.data.record;answers.value=res.data.answers||[]}finally{loading.value=false}})
 </script>
-
-<style scoped>
-.result-title {
-  font-size: 16px;
-  font-weight: bold;
-}
-.result-overview {
-  display: flex;
-  align-items: center;
-  margin-bottom: 20px;
-}
-.score-box {
-  width: 160px;
-  border: 2px solid #67c23a;
-  border-radius: 8px;
-  text-align: center;
-  padding: 16px 0;
-  margin-right: 30px;
-}
-.score-label {
-  color: #909399;
-  font-size: 13px;
-}
-.score-value {
-  font-size: 34px;
-  font-weight: bold;
-  margin: 4px 0;
-}
-.score-level {
-  display: inline-block;
-  color: #fff;
-  padding: 2px 14px;
-  border-radius: 12px;
-  font-size: 13px;
-}
-.score-meta p {
-  margin: 4px 0;
-  color: #606266;
-  font-size: 14px;
-}
-.advice-box {
-  background: #f8f9fb;
-  border-radius: 6px;
-  padding: 16px;
-  margin-bottom: 20px;
-}
-.advice-title {
-  font-weight: bold;
-  color: #303133;
-  margin-bottom: 8px;
-}
-.advice-content {
-  margin: 0;
-  color: #606266;
-  line-height: 1.9;
-}
-.ai-diagnosis-box {
-  background: linear-gradient(135deg, #f5f0ff 0%, #e8f4ff 100%);
-  border-radius: 8px;
-  padding: 16px;
-  margin-bottom: 20px;
-  border-left: 4px solid #9b59b6;
-}
-.ai-title {
-  font-weight: bold;
-  color: #303133;
-  margin-bottom: 10px;
-}
-.ai-tip {
-  color: #909399;
-  font-size: 13px;
-}
-.ai-result p {
-  margin: 0;
-  color: #303133;
-  line-height: 1.9;
-  white-space: pre-wrap;
-}
-.detail-title {
-  font-weight: bold;
-  color: #303133;
-  margin-bottom: 10px;
-}
-.result-actions {
-  margin-top: 20px;
-  display: flex;
-  justify-content: center;
-}
-</style>

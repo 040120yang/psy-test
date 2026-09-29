@@ -18,8 +18,8 @@
 | 后端 | MySQL 8.0 | 数据库 |
 | 后端 | Druid | 数据库连接池 |
 | 后端 | JJWT + spring-security-crypto | 无状态令牌认证 + BCrypt 密码加密 |
-| 前端 | Vue 2.7 + Vue Router 3 | 前端框架（对齐若依 RuoYi-Vue） |
-| 前端 | Element UI 2.15 | 组件库（对齐若依） |
+| 前端 | Vue 3.5 + Vite 6 + Vue Router 4 | 现代单页应用与工程构建 |
+| 前端 | Element Plus 2.9 | Vue 3 组件库 |
 | 前端 | Axios + ECharts | 请求封装与统计图表 |
 
 ## 二、目录结构
@@ -39,7 +39,7 @@ psy-test/
 │       └── resources/
 │           ├── application.yml   # 数据源与令牌配置
 │           └── mapper/           # MyBatis XML
-├── frontend/                     # Vue2 前端工程（若依风格，双端入口）
+├── frontend/                     # Vue 3 + Vite 前端工程（双端入口）
 │   ├── package.json
 │   ├── vue.config.js             # 端口 8088，/dev-api 代理到 8080
 │   └── src/
@@ -75,8 +75,9 @@ mysql -uroot -p < sql/psy_test.sql
 ```
 
 或使用 Navicat / DataGrip 等工具执行 `sql/psy_test.sql`。
+4. 执行更新迁移：sql/migrations/20260929_ai_knowledge_and_cleanup.sql，用于创建心理知识库并清理测试量表。
 
-### 2. 启动后端（端口 8080）
+### 2. 启动后端（默认端口 8080，当前本机使用 8081）
 
 ```bash
 cd backend
@@ -90,7 +91,7 @@ mvn clean package -DskipTests
 java -jar target/psy-test.jar
 ```
 
-启动成功提示：`区域心理测试系统后端启动成功，访问地址：http://localhost:8080`
+启动成功提示：`区域心理测试系统后端启动成功，访问地址：http://localhost:8081`
 
 ### 3. 启动前端（端口 8088）
 
@@ -122,7 +123,8 @@ npm run dev
 | 心理测评 | SAS 焦虑 / SDS 抑郁 / SCL-90 症状 / SRSS 睡眠 四类量表在线作答，自动计分 |
 | 测评报告 | 粗分、标准分、结果等级（正常/轻/中/重度）+ 分级建议 + 答题明细 |
 | 我的测评记录 | 个人测评记录查询、报告查看、记录删除 |
-| AI 智能体 | 对接扣子（Coze）智能体，与 AI 心理助手在线对话（需配置，见"九、扣子智能体配置"） |
+| 心理知识库 | 按分类查看情绪、压力、睡眠、人际、危机支持等心理科普文章 |
+| AI 智能体 | 对接扣子（Coze）智能体；额度不足或服务不可用时自动切换本地心理陪伴模式 |
 
 ### 管理端（`/admin`，系统管理员/临床医护人员）
 | 模块 | 功能 |
@@ -178,14 +180,14 @@ coze:
   bot-id: "7342xxxxxx"        # 你的智能体 ID
 ```
 
-保存后重启后端（8080）即可使用。未配置时页面会提示"未配置扣子智能体"。
+保存后重启后端即可使用。若未配置、额度不足或云端调用失败，系统会自动切换本地心理陪伴回复，仍可正常对话。
 
 ### 在线接口文档（Knife4j）
 
 后端已集成 Knife4j（基于 Swagger / OpenAPI 的在线接口文档），启动后端后访问：
 
 ```
-http://localhost:8080/doc.html
+http://localhost:8081/doc.html
 ```
 
 **它是什么 / 有什么作用**：接口文档由后端代码**自动生成**，无需手写维护，集中展示本系统全部 HTTP 接口的地址、请求方法、请求参数、返回字段与示例，主要用于：
@@ -197,7 +199,7 @@ http://localhost:8080/doc.html
 
 **怎么用（三步）**：
 
-1. 启动后端（8080）后浏览器打开 `http://localhost:8080/doc.html`，左侧按 Controller 分组列出全部接口；
+1. 启动后端（8080）后浏览器打开 `http://localhost:8081/doc.html`，左侧按 Controller 分组列出全部接口；
 2. 调试需鉴权：先在 `login-controller` 分组里调用 `/login`（用户名 + 密码 + 图形验证码）拿到返回的 `token`；
 3. 点击文档页面右上角 **「Authorize / 调试」** 按钮，在 Authorization 输入框填写 `Bearer <token>`（注意 `Bearer` 后有空格），保存后即可在线调试其他接口。
 

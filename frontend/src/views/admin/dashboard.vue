@@ -1,209 +1,41 @@
 <template>
-  <div class="dashboard">
-    <el-row :gutter="16" class="stat-cards">
-      <el-col :span="4" v-for="card in cards" :key="card.label">
-        <div class="stat-card" :style="{ borderTopColor: card.color }">
-          <div class="stat-value">{{ card.value }}</div>
-          <div class="stat-label">{{ card.label }}</div>
-        </div>
-      </el-col>
-      <el-col :span="4">
-        <div class="stat-card" style="borderTopColor:#f56c6c">
-          <div class="stat-value">{{ todayCount }}</div>
-          <div class="stat-label">今日测评</div>
-        </div>
-      </el-col>
-    </el-row>
-
-    <el-row :gutter="16" class="stat-cards" style="margin-top: 16px;">
-      <el-col :span="6">
-        <div class="stat-card" style="borderTopColor:#409EFF">
-          <div class="stat-value">{{ followTotal }}</div>
-          <div class="stat-label">随访总数</div>
-        </div>
-      </el-col>
-      <el-col :span="6">
-        <div class="stat-card" style="borderTopColor:#67C23A">
-          <div class="stat-value">{{ followDone }}</div>
-          <div class="stat-label">已完成</div>
-        </div>
-      </el-col>
-      <el-col :span="6">
-        <div class="stat-card" style="borderTopColor:#E6A23C">
-          <div class="stat-value">{{ followOverdue }}</div>
-          <div class="stat-label">逾期未随访</div>
-        </div>
-      </el-col>
-      <el-col :span="6">
-        <div class="stat-card" style="borderTopColor:#909399">
-          <div class="stat-value">{{ followRate }}%</div>
-          <div class="stat-label">完成率</div>
-        </div>
-      </el-col>
-    </el-row>
-
-    <el-row :gutter="16" class="chart-row">
-      <el-col :span="12">
-        <el-card shadow="never">
-          <div slot="header">各量表测评次数分布</div>
-          <div ref="scaleChart" class="chart"></div>
-        </el-card>
-      </el-col>
-      <el-col :span="12">
-        <el-card shadow="never">
-          <div slot="header">测评结果等级分布</div>
-          <div ref="levelChart" class="chart"></div>
-        </el-card>
-      </el-col>
-    </el-row>
-
-    <el-card shadow="never" class="chart-row">
-      <div slot="header">近 7 天测评趋势</div>
-      <div ref="trendChart" class="chart"></div>
-    </el-card>
+  <div class="page-stack">
+    <PageHeader eyebrow="Clinical Overview" title="系统概览" description="查看区域心理测评、患者随访和风险分布情况。" />
+    <section class="soft-grid">
+      <StatCard label="用户总数" :value="stats.userCount||0" icon="User" />
+      <StatCard label="测评总次数" :value="stats.recordCount||0" icon="Document" color="var(--accent)" />
+      <StatCard label="患者总数" :value="stats.patientCount||0" icon="FirstAidKit" color="var(--success)" />
+      <StatCard label="今日测评" :value="stats.todayCount||0" icon="Calendar" color="var(--warning)" />
+    </section>
+    <section class="soft-grid">
+      <StatCard label="随访总数" :value="stats.followTotal||0" icon="Bell" />
+      <StatCard label="已完成随访" :value="stats.followDone||0" icon="CircleCheck" color="var(--success)" />
+      <StatCard label="逾期未随访" :value="stats.followOverdue||0" icon="Warning" color="var(--danger)" />
+      <StatCard label="随访完成率" :value="`${followRate}%`" icon="TrendCharts" color="var(--primary)" />
+    </section>
+    <section class="soft-grid cols-2">
+      <div class="panel"><div class="panel-head"><div><div class="panel-title">风险等级分布</div><div class="panel-subtitle">按测评结果等级统计</div></div></div><div class="panel-body"><div ref="levelChart" class="chart"/></div></div>
+      <div class="panel"><div class="panel-head"><div><div class="panel-title">量表使用情况</div><div class="panel-subtitle">各量表累计测评次数</div></div></div><div class="panel-body"><div ref="scaleChart" class="chart"/></div></div>
+    </section>
+    <section class="panel"><div class="panel-head"><div><div class="panel-title">近 7 天测评趋势</div><div class="panel-subtitle">每日完成测评次数</div></div></div><div class="panel-body"><div ref="trendChart" class="trend-chart"/></div></section>
   </div>
 </template>
-
-<script>
-import { getStats } from '@/api/dashboard'
+<script setup>
+import { ref, reactive, computed, onMounted, onBeforeUnmount } from 'vue'
 import * as echarts from 'echarts'
-
-export default {
-  name: 'Dashboard',
-  data() {
-    return {
-      cards: [
-        { label: '用户总数', value: 0, color: '#409EFF' },
-        { label: '测评总次数', value: 0, color: '#67C23A' },
-        { label: '量表总数', value: 0, color: '#E6A23C' },
-        { label: '患者总数', value: 0, color: '#909399' }
-      ],
-      todayCount: 0,
-      followTotal: 0,
-      followDone: 0,
-      followOverdue: 0
-    }
-  },
-  computed: {
-    followRate() {
-      return this.followTotal > 0 ? Math.round(this.followDone * 100 / this.followTotal) : 0
-    }
-  },
-  mounted() {
-    this.loadStats()
-  },
-  methods: {
-    loadStats() {
-      getStats().then(res => {
-        const data = res.data
-        this.cards[0].value = data.userCount
-        this.cards[1].value = data.recordCount
-        this.cards[2].value = data.scaleCount
-        this.cards[3].value = data.patientCount
-        this.todayCount = data.todayCount
-        this.followTotal = data.followTotal || 0
-        this.followDone = data.followDone || 0
-        this.followOverdue = data.followOverdue || 0
-        this.renderScaleChart(data.scaleDist || [])
-        this.renderLevelChart(data.levelDist || [])
-        this.renderTrendChart(data.weekTrend || [])
-      })
-    },
-    renderScaleChart(dist) {
-      const chart = echarts.init(this.$refs.scaleChart)
-      chart.setOption({
-        tooltip: { trigger: 'axis' },
-        grid: { left: 40, right: 20, top: 30, bottom: 30 },
-        xAxis: { type: 'category', data: dist.map(d => d.name) },
-        yAxis: { type: 'value', minInterval: 1 },
-        series: [{
-          type: 'bar',
-          barWidth: 40,
-          data: dist.map(d => d.value),
-          itemStyle: { color: '#409EFF', borderRadius: [4, 4, 0, 0] }
-        }]
-      })
-    },
-    renderLevelChart(dist) {
-      const chart = echarts.init(this.$refs.levelChart)
-      // 按严重程度统一配色：正常=绿 / 轻度=黄 / 中度=橙 / 重度=红，未识别等级兜底灰色
-      const levelColor = name => {
-        if (name === '正常') return '#67C23A'
-        if (name.indexOf('重度睡眠') !== -1) return '#B22222'  //砖红
-        if (name.indexOf('重度焦虑') !== -1) return '#8B0000'  //深红
-        if (name.indexOf('重度抑郁') !== -1) return '#FF8A80'  //浅红
-        if (name.indexOf('重度') !== -1) return '#ff4d4f'     //中红
-        if (name.indexOf('中度睡眠') !== -1) return '#FFA940' //亮橙
-        if (name.indexOf('中度焦虑') !== -1) return '#E86F0C' //深橙
-        if (name.indexOf('中度抑郁') !== -1) return '#FF9800' //通用橙
-        if (name.indexOf('中度') !== -1) return '#FA8C16'     
-        if (name.indexOf('轻度睡眠') !== -1) return '#FFEB3B' //亮黄
-        if (name.indexOf('轻度焦虑') !== -1) return '#FFD700' //中黄
-        if (name.indexOf('轻度抑郁') !== -1) return '#F5C518' //温和黄
-        if (name.indexOf('轻度') !== -1) return '#E6A23C'
-        return '#909399'
-      }
-      chart.setOption({
-        tooltip: { trigger: 'item' },
-        legend: { bottom: 0 },
-        series: [{
-          type: 'pie',
-          radius: ['40%', '65%'],
-          data: dist.map(d => ({
-            name: d.name,
-            value: d.value,
-            itemStyle: { color: levelColor(d.name) }
-          })),
-          label: { formatter: '{b}: {c}' }
-        }]
-      })
-    },
-    renderTrendChart(trend) {
-      const chart = echarts.init(this.$refs.trendChart)
-      chart.setOption({
-        tooltip: { trigger: 'axis' },
-        grid: { left: 40, right: 20, top: 30, bottom: 30 },
-        xAxis: { type: 'category', data: trend.map(d => d.day) },
-        yAxis: { type: 'value', minInterval: 1 },
-        series: [{
-          type: 'line',
-          smooth: true,
-          areaStyle: { opacity: 0.15 },
-          data: trend.map(d => d.value),
-          itemStyle: { color: '#67C23A' }
-        }]
-      })
-    }
-  }
-}
+import PageHeader from '@/components/PageHeader.vue'
+import StatCard from '@/components/StatCard.vue'
+import { getStats } from '@/api/dashboard'
+const stats=reactive({}); const levelChart=ref(); const scaleChart=ref(); const trendChart=ref(); const charts=[]
+const followRate=computed(()=>stats.followTotal?Math.round((stats.followDone||0)*100/stats.followTotal):0)
+const palette=['#36a269','#f4c14f','#f39a4a','#e5484d','#7c5cb0']
+function initChart(el,option){const chart=echarts.init(el);chart.setOption(option);charts.push(chart);return chart}
+function levelColor(name){const t=name||'';if(t.includes('重度'))return '#e5484d';if(t.includes('中度'))return '#f39a4a';if(t.includes('轻度'))return '#f4c14f';if(t==='正常')return '#36a269';return '#94a3b8'}
+async function load(){const res=await getStats();Object.assign(stats,res.data||{});const level=(res.data.levelDist||[]).map((i,index)=>({name:i.name,value:i.value,itemStyle:{color:levelColor(i.name)}}));const scales=res.data.scaleDist||[];const trend=res.data.weekTrend||[];initChart(levelChart.value,{tooltip:{trigger:'item'},legend:{bottom:0,icon:'circle'},series:[{type:'pie',radius:['48%','72%'],center:['50%','44%'],itemStyle:{borderRadius:6,borderColor:'#fff',borderWidth:3},label:{formatter:'{b}\n{c}'},data:level}]});initChart(scaleChart.value,{tooltip:{trigger:'axis'},grid:{left:34,right:16,top:24,bottom:36},xAxis:{type:'category',data:scales.map(i=>i.name),axisLine:{lineStyle:{color:'#dbe3ec'}}},yAxis:{type:'value',minInterval:1,splitLine:{lineStyle:{color:'#eef2f7'}}},series:[{type:'bar',barMaxWidth:38,data:scales.map((i,index)=>({value:i.value,itemStyle:{color:palette[index%palette.length],borderRadius:[8,8,0,0]}}))}]});initChart(trendChart.value,{tooltip:{trigger:'axis'},grid:{left:34,right:20,top:24,bottom:36},xAxis:{type:'category',boundaryGap:false,data:trend.map(i=>i.day)},yAxis:{type:'value',minInterval:1,splitLine:{lineStyle:{color:'#eef2f7'}}},series:[{type:'line',smooth:true,symbolSize:8,data:trend.map(i=>i.value),lineStyle:{width:3,color:'#2f7d7a'},itemStyle:{color:'#2f7d7a'},areaStyle:{color:new echarts.graphic.LinearGradient(0,0,0,1,[{offset:0,color:'rgba(47,125,122,.28)'},{offset:1,color:'rgba(47,125,122,0)'}])}}]})}
+function resize(){charts.forEach(c=>c.resize())}
+onMounted(()=>{load();window.addEventListener('resize',resize)})
+onBeforeUnmount(()=>{window.removeEventListener('resize',resize);charts.forEach(c=>c.dispose())})
 </script>
-
 <style scoped>
-.stat-cards {
-  margin-bottom: 16px;
-}
-.stat-card {
-  background: #fff;
-  border-radius: 6px;
-  border-top: 3px solid #409EFF;
-  padding: 18px;
-  text-align: center;
-  box-shadow: 0 1px 4px rgba(0, 21, 41, 0.06);
-}
-.stat-value {
-  font-size: 26px;
-  font-weight: bold;
-  color: #333;
-}
-.stat-label {
-  margin-top: 6px;
-  font-size: 13px;
-  color: #909399;
-}
-.chart-row {
-  margin-bottom: 16px;
-}
-.chart {
-  height: 300px;
-}
+.chart{height:330px}.trend-chart{height:290px}
 </style>

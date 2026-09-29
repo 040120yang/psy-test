@@ -1,201 +1,58 @@
-import Vue from 'vue'
-import Router from 'vue-router'
+import { createRouter, createWebHistory } from 'vue-router'
+import { getUserRole } from '@/utils/auth'
 
-Vue.use(Router)
+const homeByRole = () => getUserRole() === 'user' ? '/portal/home' : '/admin/dashboard'
 
-const PortalLayout = () => import('@/layout/PortalLayout')
-const AdminLayout = () => import('@/layout/AdminLayout')
+const portalRoutes = {
+  path: '/portal',
+  component: () => import('@/layout/PortalLayout.vue'),
+  redirect: '/portal/home',
+  meta: { roles: ['user'] },
+  children: [
+    { path: 'home', component: () => import('@/views/portal/home.vue'), meta: { title: '工作台', icon: 'HomeFilled' } },
+    { path: 'scales', component: () => import('@/views/portal/scales.vue'), meta: { title: '心理测评', icon: 'Notebook' } },
+    { path: 'answer', component: () => import('@/views/portal/answer.vue'), meta: { title: '在线答题', hidden: true } },
+    { path: 'result', component: () => import('@/views/portal/result.vue'), meta: { title: '测评报告', hidden: true } },
+    { path: 'records', component: () => import('@/views/portal/records.vue'), meta: { title: '我的记录', icon: 'Document' } },
+    { path: 'follow', component: () => import('@/views/portal/follow.vue'), meta: { title: '我的随访', icon: 'Bell' } },
+    { path: 'message', component: () => import('@/views/portal/message.vue'), meta: { title: '消息中心', icon: 'ChatDotRound' } },
+    { path: 'knowledge', component: () => import('@/views/portal/knowledge.vue'), meta: { title: '心理知识', icon: 'Reading' } },
+    { path: 'coze', component: () => import('@/views/portal/coze.vue'), meta: { title: 'AI 助手', icon: 'MagicStick' } },
+    { path: 'personal-center', component: () => import('@/views/portal/personal_center.vue'), meta: { title: '个人中心', hidden: true } }
+  ]
+}
 
-/**
- * 用户端路由（公众用户：心理测评 + 我的测评记录）
- */
-export const portalRoutes = [
-  {
-    path: '/portal',
-    component: PortalLayout,
-    redirect: '/portal/home',
-    meta: { title: '心理测评', icon: 'el-icon-notebook-2', roles: ['user'] },
-    children: [
-      {
-        path: 'home',
-        name: 'PortalHome',
-        component: () => import('@/views/portal/home'),
-        meta: { title: '首页', icon: 'el-icon-house' }
-      },
-      {
-        path: 'scales',
-        name: 'PortalScales',
-        component: () => import('@/views/portal/scales'),
-        meta: { title: '心理测评', icon: 'el-icon-notebook-2' }
-      },
-      {
-        path: 'answer',
-        name: 'PortalAnswer',
-        component: () => import('@/views/portal/answer'),
-        hidden: true,
-        meta: { title: '在线答题', activeMenu: '/portal/scales' }
-      },
-      {
-        path: 'result',
-        name: 'PortalResult',
-        component: () => import('@/views/portal/result'),
-        hidden: true,
-        meta: { title: '测评报告', activeMenu: '/portal/scales' }
-      },
-      {
-        path: 'records',
-        name: 'PortalRecords',
-        component: () => import('@/views/portal/records'),
-        meta: { title: '我的测评记录', icon: 'el-icon-document' }
-      },
-      {
-        path: 'coze',
-        name: 'PortalCoze',
-        component: () => import('@/views/portal/coze'),
-        meta: { title: 'AI 智能体', icon: 'el-icon-chat-dot-round' }
-      },
-      {
-        path: 'personal_center',
-        name: 'PortalPersonalCenter',
-        component: () => import('@/views/portal/personal_center'),
-        meta: { title: '个人中心', icon: 'el-icon-user-solid' }
-      },
-      {
-        path: 'follow',
-        name: 'PortalFollow',
-        component: () => import('@/views/portal/follow'),
-        meta: { title: '我的随访', icon: 'el-icon-bell' }
-      },
-      {
-        path: 'message',
-        name: 'PortalMessage',
-        component: () => import('@/views/portal/message'),
-        meta: { title: '消息中心', icon: 'el-icon-message' }
-      }
-    ]
-  }
-]
+const adminRoutes = {
+  path: '/admin',
+  component: () => import('@/layout/AdminLayout.vue'),
+  redirect: '/admin/dashboard',
+  meta: { roles: ['admin', 'doctor'] },
+  children: [
+    { path: 'dashboard', component: () => import('@/views/admin/dashboard.vue'), meta: { title: '系统概览', icon: 'DataAnalysis' } },
+    { path: 'records', component: () => import('@/views/admin/records.vue'), meta: { title: '测评记录', icon: 'Document' } },
+    { path: 'patients', component: () => import('@/views/admin/patients.vue'), meta: { title: '患者管理', icon: 'User' } },
+    { path: 'follow', component: () => import('@/views/admin/follow.vue'), meta: { title: '随访管理', icon: 'Bell' } },
+    { path: 'knowledge', component: () => import('@/views/admin/knowledge.vue'), meta: { title: '知识库', icon: 'Reading', roles: ['admin'] } },
+    { path: 'logs/login', component: () => import('@/views/admin/log/login.vue'), meta: { title: '登录日志', icon: 'Clock', roles: ['admin'] } },
+    { path: 'logs/oper', component: () => import('@/views/admin/log/oper.vue'), meta: { title: '操作日志', icon: 'List', roles: ['admin'] } },
+    { path: 'system/user', component: () => import('@/views/admin/system/user.vue'), meta: { title: '用户管理', icon: 'UserFilled', roles: ['admin'] } },
+    { path: 'system/scale', component: () => import('@/views/admin/system/scale.vue'), meta: { title: '量表管理', icon: 'Notebook', roles: ['admin'] } },
+    { path: 'system/question', component: () => import('@/views/admin/system/question.vue'), meta: { title: '题目管理', icon: 'Tickets', roles: ['admin'] } }
+  ]
+}
 
-/**
- * 管理端路由（系统管理员 / 临床医护人员）
- */
-export const adminRoutes = [
-  {
-    path: '/admin',
-    component: AdminLayout,
-    redirect: '/admin/dashboard',
-    meta: { title: '管理后台', roles: ['admin', 'doctor'] },
-    children: [
-      {
-        path: 'dashboard',
-        name: 'AdminDashboard',
-        component: () => import('@/views/admin/dashboard'),
-        meta: { title: '系统概览', icon: 'el-icon-data-analysis', roles: ['admin', 'doctor'] }
-      },
-      {
-        path: 'records',
-        name: 'AdminRecords',
-        component: () => import('@/views/admin/records'),
-        meta: { title: '测评记录', icon: 'el-icon-document', roles: ['admin', 'doctor'] }
-      },
-      {
-        path: 'patients',
-        name: 'AdminPatients',
-        component: () => import('@/views/admin/patients'),
-        meta: { title: '患者管理', icon: 'el-icon-user', roles: ['admin', 'doctor'] }
-      },
-      {
-        path: 'follow',
-        name: 'AdminFollow',
-        component: () => import('@/views/admin/follow'),
-        meta: { title: '随访管理', icon: 'el-icon-bell', roles: ['admin', 'doctor'] }
-      },
-      {
-        path: 'log',
-        component: { render: h => h('router-view') },
-        meta: { title: '日志管理', icon: 'el-icon-document-checked', roles: ['admin'] },
-        children: [
-          {
-            path: 'oper',
-            name: 'AdminLogOper',
-            component: () => import('@/views/admin/log/oper'),
-            meta: { title: '操作日志' }
-          },
-          {
-            path: 'login',
-            name: 'AdminLogLogin',
-            component: () => import('@/views/admin/log/login'),
-            meta: { title: '登录日志' }
-          }
-        ]
-      },
-      {
-        path: 'system',
-        // vue-router 3 嵌套父节点必须提供组件，否则子路由空白
-        component: { render: h => h('router-view') },
-        meta: { title: '系统管理', icon: 'el-icon-setting', roles: ['admin'] },
-        children: [
-          {
-            path: 'user',
-            name: 'AdminSystemUser',
-            component: () => import('@/views/admin/system/user'),
-            meta: { title: '用户管理', icon: 'el-icon-user-solid' }
-          },
-          {
-            path: 'scale',
-            name: 'AdminSystemScale',
-            component: () => import('@/views/admin/system/scale'),
-            meta: { title: '量表管理', icon: 'el-icon-notebook-1' }
-          },
-          {
-            path: 'question',
-            name: 'AdminSystemQuestion',
-            component: () => import('@/views/admin/system/question'),
-            meta: { title: '题目管理', icon: 'el-icon-tickets' }
-          }
-        ]
-      }
-    ]
-  }
-]
-
-/**
- * 路由表
- */
-export const constantRoutes = [
-  {
-    path: '/login',
-    component: () => import('@/views/login/index'),
-    hidden: true
-  },
-  {
-    path: '/register',
-    component: () => import('@/views/login/register'),
-    hidden: true
-  },
-  {
-    path: '/404',
-    component: () => import('@/views/error/404'),
-    hidden: true
-  },
-  {
-    path: '/',
-    redirect: '/portal/home',
-    hidden: true
-  },
-  ...portalRoutes,
-  ...adminRoutes,
-  {
-    path: '*',
-    redirect: '/404',
-    hidden: true
-  }
-]
-
-const router = new Router({
-  mode: 'history',
-  scrollBehavior: () => ({ y: 0 }),
-  routes: constantRoutes
+const router = createRouter({
+  history: createWebHistory(),
+  scrollBehavior: () => ({ top: 0 }),
+  routes: [
+    { path: '/login', component: () => import('@/views/login/index.vue'), meta: { public: true, title: '登录' } },
+    { path: '/register', component: () => import('@/views/login/register.vue'), meta: { public: true, title: '注册' } },
+    { path: '/404', component: () => import('@/views/error/404.vue'), meta: { public: true, title: '页面不存在' } },
+    { path: '/', redirect: homeByRole },
+    portalRoutes,
+    adminRoutes,
+    { path: '/:pathMatch(.*)*', redirect: '/404' }
+  ]
 })
 
 export default router

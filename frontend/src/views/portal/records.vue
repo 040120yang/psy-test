@@ -1,154 +1,26 @@
 <template>
-  <div class="record-page">
-    <el-card shadow="never">
-      <div slot="header" class="record-header">
-        <span>我的测评记录</span>
-      </div>
-
-      <el-table :data="records" border v-loading="loading">
-        <el-table-column prop="scaleName" label="量表名称" min-width="140" />
-        <el-table-column prop="scaleCode" label="编码" width="90" align="center" />
-        <el-table-column prop="rawScore" label="粗分" width="70" align="center" />
-        <el-table-column prop="stdScore" label="标准分" width="80" align="center" />
-        <el-table-column label="等级" width="110" align="center">
-          <template slot-scope="scope">
-            <el-tag size="small" :color="getLevelColor(scope.row.level)" style="color:#fff;border:0;">{{ scope.row.level }}</el-tag>
-          </template>
-        </el-table-column>
-        <el-table-column prop="createTime" label="测评时间" width="160" align="center" />
-        <el-table-column label="操作" width="150" align="center">
-          <template slot-scope="scope">
-            <el-button type="text" size="small" @click="showDetail(scope.row.recordId)">查看报告</el-button>
-            <el-button type="text" size="small" style="color:#f56c6c" @click="handleDelete(scope.row)">删除</el-button>
-          </template>
-        </el-table-column>
-      </el-table>
-
-      <el-pagination
-        class="pagination"
-        background
-        layout="total, prev, pager, next"
-        :total="total"
-        :page-size="query.pageSize"
-        :current-page.sync="query.pageNum"
-        @current-change="loadRecords"
-      />
-    </el-card>
-
-    <!-- 报告详情弹窗 -->
-    <el-dialog :title="'测评报告 - ' + (detail.record ? detail.record.scaleName : '')" :visible.sync="dialogVisible" width="720px">
-      <div v-if="detail.record">
-        <el-descriptions :column="3" border size="small">
-          <el-descriptions-item label="粗分">{{ detail.record.rawScore }}</el-descriptions-item>
-          <el-descriptions-item label="标准分">{{ detail.record.stdScore }}</el-descriptions-item>
-          <el-descriptions-item label="等级">{{ detail.record.level }}</el-descriptions-item>
-          <el-descriptions-item label="测评时间" :span="3">{{ detail.record.createTime }}</el-descriptions-item>
-        </el-descriptions>
-        <div class="detail-advice">
-          <b>分析与建议：</b>
-          <p>{{ detail.record.suggestion }}</p>
-        </div>
-        <div v-if="detail.record.doctorConclusion" class="detail-advice" style="background:#f5f0ff;padding:12px;border-radius:6px;">
-          <b style="color:#9b59b6;">医生诊断结论：</b>
-          <p>{{ detail.record.doctorConclusion }}</p>
-        </div>
-        <div v-if="detail.record.doctorAdvice" class="detail-advice" style="background:#fff8f0;padding:12px;border-radius:6px;">
-          <b style="color:#e86f0c;">医生处方建议：</b>
-          <p>{{ detail.record.doctorAdvice }}</p>
-        </div>
-        <el-table :data="detail.answers" border size="small" max-height="300">
-          <el-table-column type="index" label="题号" width="60" align="center" />
-          <el-table-column prop="content" label="题目" min-width="260" />
-          <el-table-column label="选项分值" width="90" align="center">
-            <template slot-scope="scope">{{ scope.row.optionValue }} 分</template>
-          </el-table-column>
-        </el-table>
-      </div>
-    </el-dialog>
+  <div class="page-stack">
+    <PageHeader eyebrow="My Reports" title="我的测评记录" description="查看历次测评的标准分、风险等级和建议，支持进入报告详情。">
+      <template #actions><el-button type="primary" @click="$router.push('/portal/scales')">开始新测评</el-button></template>
+    </PageHeader>
+    <section class="panel"><div class="panel-head"><div><div class="panel-title">记录列表</div><div class="panel-subtitle">共 {{ total }} 条记录</div></div><el-input v-model="query.scaleName" clearable placeholder="按量表名称搜索" style="width:240px" @keyup.enter="load" /><el-button @click="load">查询</el-button></div><div class="panel-body">
+      <el-table v-if="rows.length" :data="rows" stripe><el-table-column prop="scaleName" label="量表" min-width="180" /><el-table-column prop="scaleCode" label="编码" width="110" /><el-table-column prop="rawScore" label="粗分" width="90" align="center" /><el-table-column prop="stdScore" label="标准分" width="100" align="center" /><el-table-column label="等级" width="140"><template #default="{row}"><StatusTag :text="row.level" /></template></el-table-column><el-table-column prop="createTime" label="测评时间" min-width="170" /><el-table-column label="操作" width="170" fixed="right"><template #default="{row}"><el-button text type="primary" @click="open(row)">查看报告</el-button><el-button text type="danger" @click="remove(row)">删除</el-button></template></el-table-column></el-table>
+      <EmptyPanel v-else title="暂无测评记录" description="完成一次测评后，记录会显示在这里"><el-button type="primary" @click="$router.push('/portal/scales')">开始测评</el-button></EmptyPanel>
+      <el-pagination v-if="total" v-model:current-page="query.pageNum" v-model:page-size="query.pageSize" layout="total, prev, pager, next" :total="total" @current-change="load" />
+    </div></section>
   </div>
 </template>
-
-<script>
-import { listMyRecords, getRecordDetail, delRecord } from '@/api/test'
-
-export default {
-  name: 'PortalRecords',
-  data() {
-    return {
-      records: [],
-      total: 0,
-      loading: false,
-      query: { pageNum: 1, pageSize: 10 },
-      dialogVisible: false,
-      detail: {}
-    }
-  },
-  created() {
-    this.loadRecords()
-  },
-  methods: {
-    loadRecords() {
-      this.loading = true
-      listMyRecords(this.query).then(res => {
-        this.records = res.rows || []
-        this.total = res.total || 0
-      }).finally(() => { this.loading = false })
-    },
-    showDetail(recordId) {
-      getRecordDetail(recordId).then(res => {
-        this.detail = res.data
-        this.dialogVisible = true
-      })
-    },
-    handleDelete(row) {
-      this.$confirm(`确认删除该测评记录（${row.scaleName}）吗？`, '提示', { type: 'warning' })
-        .then(() => delRecord(row.recordId))
-        .then(() => {
-          this.$message.success('删除成功')
-          this.loadRecords()
-        })
-        .catch(() => {})
-    },
-    getLevelColor(name) {
-      if (name === '正常') return '#67C23A'
-      if (name && name.indexOf('重度睡眠') !== -1) return '#B22222'
-      if (name && name.indexOf('重度焦虑') !== -1) return '#8B0000'
-      if (name && name.indexOf('重度抑郁') !== -1) return '#FF8A80'
-      if (name && name.indexOf('重度') !== -1) return '#ff4d4f'
-      if (name && name.indexOf('中度睡眠') !== -1) return '#FFA940'
-      if (name && name.indexOf('中度焦虑') !== -1) return '#E86F0C'
-      if (name && name.indexOf('中度抑郁') !== -1) return '#FF9800'
-      if (name && name.indexOf('中度') !== -1) return '#FA8C16'
-      if (name && name.indexOf('轻度睡眠') !== -1) return '#FFEB3B'
-      if (name && name.indexOf('轻度焦虑') !== -1) return '#FFD700'
-      if (name && name.indexOf('轻度抑郁') !== -1) return '#F5C518'
-      if (name && name.indexOf('轻度') !== -1) return '#E6A23C'
-      return '#909399'
-    }
-  }
-}
+<script setup>
+import { ref, reactive, onMounted } from 'vue'
+import { useRouter } from 'vue-router'
+import { ElMessage, ElMessageBox } from 'element-plus'
+import PageHeader from '@/components/PageHeader.vue'
+import StatusTag from '@/components/StatusTag.vue'
+import EmptyPanel from '@/components/EmptyPanel.vue'
+import { listMyRecords, delRecord } from '@/api/test'
+const router=useRouter(); const rows=ref([]); const total=ref(0); const query=reactive({pageNum:1,pageSize:10,scaleName:''})
+async function load(){const res=await listMyRecords(query);rows.value=res.rows||[];total.value=res.total||rows.value.length}
+function open(row){router.push({path:'/portal/result',query:{recordId:row.recordId}})}
+async function remove(row){await ElMessageBox.confirm('确认删除这条测评记录吗？删除后无法恢复。','删除确认',{type:'warning'});await delRecord(row.recordId);ElMessage.success('已删除');load()}
+onMounted(load)
 </script>
-
-<style scoped>
-.record-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-weight: bold;
-}
-.pagination {
-  margin-top: 16px;
-  text-align: right;
-}
-.detail-advice {
-  margin: 14px 0;
-  background: #f8f9fb;
-  padding: 12px;
-  border-radius: 6px;
-}
-.detail-advice p {
-  margin: 6px 0 0;
-  color: #606266;
-  line-height: 1.8;
-}
-</style>

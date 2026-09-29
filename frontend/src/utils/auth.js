@@ -1,36 +1,29 @@
-/**
- * 认证信息存储：使用 sessionStorage
- * 关闭浏览器（会话结束）后登录态自动失效，每次运行需重新登录
- */
-const TokenKey = 'PsyTest-Token'
-const UserKey = 'PsyTest-User'
+const TOKEN_KEY = 'psy-test-token'
+const USER_KEY = 'psy-test-user'
 
 export function getToken() {
-  return sessionStorage.getItem(TokenKey)
+  return sessionStorage.getItem(TOKEN_KEY)
 }
-
 export function setToken(token) {
-  sessionStorage.setItem(TokenKey, token)
+  sessionStorage.setItem(TOKEN_KEY, token)
 }
-
 export function removeToken() {
-  sessionStorage.removeItem(TokenKey)
+  sessionStorage.removeItem(TOKEN_KEY)
 }
-
 export function getUser() {
-  const str = sessionStorage.getItem(UserKey)
-  if (!str) return null
-  try {
-    return JSON.parse(str)
-  } catch (e) {
-    return null
-  }
+  const raw = sessionStorage.getItem(USER_KEY)
+  if (!raw) return null
+  try { return JSON.parse(raw) } catch { return null }
 }
-
 export function setUser(user) {
-  sessionStorage.setItem(UserKey, JSON.stringify(user))
+  sessionStorage.setItem(USER_KEY, JSON.stringify(user))
 }
-
 export function removeUser() {
-  sessionStorage.removeItem(UserKey)
+  sessionStorage.removeItem(USER_KEY)
+}
+export function getUserRole() {
+  return getUser()?.roles?.[0] || 'user'
+}
+export function isAdmin() {
+  return getUserRole() === 'admin'
 }
