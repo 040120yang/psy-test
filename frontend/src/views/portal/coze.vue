@@ -1,6 +1,6 @@
 <template>
   <div class="page-stack">
-    <PageHeader eyebrow="AI Companion" title="AI 心理助手" description="用于心理陪伴和健康科普，不提供医学诊断。遇到危机情况请优先联系专业人员或拨打 12356。">
+    <PageHeader eyebrow="AI Companion" title="AI 心理助手" description="用于心理陪伴和健康科普，不提供专业心理评估。遇到危机情况请优先联系专业人员或拨打 12356。">
       <template #actions><el-button @click="clearChat">清空对话</el-button></template>
     </PageHeader>
     <section class="chat-shell panel">
@@ -20,7 +20,7 @@
         <div v-if="loading && !messages[messages.length-1]?.streaming" class="message-row assistant"><div class="bubble-avatar"><el-icon><MagicStick /></el-icon></div><div class="bubble typing"><span></span><span></span><span></span></div></div>
       </div>
       <div class="chat-input"><el-input v-model="input" type="textarea" :rows="2" resize="none" placeholder="写下你现在的感受，Enter 发送，Shift+Enter 换行" @keydown.enter.exact.prevent="send()" /><el-button type="primary" size="large" :loading="loading" @click="send()">发送</el-button></div>
-      <div class="chat-footnote">AI 回复仅用于心理陪伴和健康教育，不能替代医生诊断。如有自伤或轻生想法，请立即求助身边人员并拨打 12356。</div>
+      <div class="chat-footnote">AI 回复仅用于心理陪伴和健康教育，不能替代心理教师评估。如有自伤或轻生想法，请立即求助身边人员并拨打 12356。</div>
     </section>
   </div>
 </template>

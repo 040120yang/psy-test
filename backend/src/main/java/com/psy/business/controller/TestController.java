@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * 心理测评（公众用户答题端）
+ * 心理测评（学生用户答题端）
  */
 @RestController
 @RequestMapping("/test")

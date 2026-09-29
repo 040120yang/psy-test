@@ -5,7 +5,7 @@
       <el-menu :default-active="$route.path" router :collapse="collapsed" class="admin-menu" background-color="transparent" text-color="rgba(255,255,255,.72)" active-text-color="#fff">
         <el-menu-item index="/admin/dashboard"><el-icon><DataAnalysis /></el-icon><template #title>系统概览</template></el-menu-item>
         <el-menu-item index="/admin/records"><el-icon><Document /></el-icon><template #title>测评记录</template></el-menu-item>
-        <el-menu-item index="/admin/patients"><el-icon><User /></el-icon><template #title>患者管理</template></el-menu-item>
+        <el-menu-item index="/admin/patients"><el-icon><User /></el-icon><template #title>学生管理</template></el-menu-item>
         <el-menu-item index="/admin/follow"><el-icon><Bell /></el-icon><template #title>随访管理</template></el-menu-item>
         <template v-if="isAdmin">
           <div class="menu-caption">系统维护</div>
@@ -21,7 +21,7 @@
         <div><div class="crumb">管理后台 / {{ $route.meta.title || '系统概览' }}</div><h2>{{ $route.meta.title || '系统概览' }}</h2></div>
         <el-dropdown trigger="click" @command="handleCommand">
           <button class="admin-user"><el-avatar :size="34" class="avatar">{{ initial }}</el-avatar><span><strong>{{ user.nickname || user.username }}</strong><small>{{ roleName }}</small></span><el-icon><ArrowDown /></el-icon></button>
-          <template #dropdown><el-dropdown-menu><el-dropdown-item command="portal" v-if="isAdmin">切换用户端</el-dropdown-item><el-dropdown-item divided command="logout">退出登录</el-dropdown-item></el-dropdown-menu></template>
+          <template #dropdown><el-dropdown-menu><el-dropdown-item command="portal" v-if="isAdmin">切换学生端</el-dropdown-item><el-dropdown-item divided command="logout">退出登录</el-dropdown-item></el-dropdown-menu></template>
         </el-dropdown>
       </header>
       <main class="admin-content"><router-view /></main>
@@ -38,7 +38,7 @@ import { logout } from '@/api/login'
 const router=useRouter(); const collapsed=ref(false); const user=ref(getUser()||{})
 const isAdmin=computed(()=>user.value.roles?.[0]==='admin')
 const initial=computed(()=>(user.value.nickname||user.value.username||'管').slice(0,1))
-const roleName=computed(()=>user.value.roles?.[0]==='admin'?'系统管理员':'临床医护人员')
+const roleName=computed(()=>user.value.roles?.[0]==='admin'?'系统管理员':'心理教师/辅导员')
 const handleCommand=async command=>{if(command==='portal')return router.push('/portal/home');if(command==='logout'){try{await logout()}finally{removeToken();removeUser();ElMessage.success('已退出登录');router.replace('/login')}}}
 </script>
 <style scoped>

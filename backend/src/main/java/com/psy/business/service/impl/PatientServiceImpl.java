@@ -14,7 +14,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 /**
- * 患者信息业务实现
+ * 学生信息业务实现
  */
 @Service
 public class PatientServiceImpl implements PatientService {
@@ -27,7 +27,7 @@ public class PatientServiceImpl implements PatientService {
 
     @Override
     public TableDataInfo list(Patient patient) {
-        // 公众用户只能查看/管理关联到自己的患者
+        // 学生用户只能查看/管理关联到自己的学生
         if (SecurityUtils.isUser()) {
             patient.setUserId(SecurityUtils.getUserId());
         }
@@ -39,7 +39,7 @@ public class PatientServiceImpl implements PatientService {
     @Override
     public int add(Patient patient) {
         if (StringUtils.isEmpty(patient.getPatientName())) {
-            throw new ServiceException("患者姓名不能为空");
+            throw new ServiceException("学生姓名不能为空");
         }
         if (SecurityUtils.isUser()) {
             patient.setUserId(SecurityUtils.getUserId());
@@ -50,16 +50,16 @@ public class PatientServiceImpl implements PatientService {
     @Override
     public int edit(Patient patient) {
         if (patient.getPatientId() == null) {
-            throw new ServiceException("患者ID不能为空");
+            throw new ServiceException("学生ID不能为空");
         }
         Patient exist = patientMapper.selectPatientById(patient.getPatientId());
         if (exist == null) {
-            throw new ServiceException("患者不存在");
+            throw new ServiceException("学生不存在");
         }
-        // 公众用户只能修改自己的患者
+        // 学生用户只能修改自己的学生
         if (SecurityUtils.isUser() && exist.getUserId() != null
                 && !SecurityUtils.getUserId().equals(exist.getUserId())) {
-            throw new ServiceException("无权限修改该患者信息");
+            throw new ServiceException("无权限修改该学生信息");
         }
         // 同步更新 sys_user（昵称/性别/年龄/手机号）
         if (exist.getUserId() != null) {
@@ -78,11 +78,11 @@ public class PatientServiceImpl implements PatientService {
     public int remove(Long patientId) {
         Patient exist = patientMapper.selectPatientById(patientId);
         if (exist == null) {
-            throw new ServiceException("患者不存在");
+            throw new ServiceException("学生不存在");
         }
         if (SecurityUtils.isUser() && exist.getUserId() != null
                 && !SecurityUtils.getUserId().equals(exist.getUserId())) {
-            throw new ServiceException("无权限删除该患者信息");
+            throw new ServiceException("无权限删除该学生信息");
         }
         return patientMapper.deletePatientById(patientId);
     }

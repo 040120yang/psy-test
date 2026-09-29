@@ -35,9 +35,9 @@ public class Constants {
     /** 角色Key：系统管理员 */
     public static final String ROLE_ADMIN = "admin";
 
-    /** 角色Key：临床医护人员 */
+    /** 角色Key：心理教师/辅导员 */
     public static final String ROLE_DOCTOR = "doctor";
 
-    /** 角色Key：公众用户 */
+    /** 角色Key：学生用户 */
     public static final String ROLE_USER = "user";
 }

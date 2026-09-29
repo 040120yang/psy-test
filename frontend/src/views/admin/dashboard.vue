@@ -1,10 +1,10 @@
 <template>
   <div class="page-stack">
-    <PageHeader eyebrow="Clinical Overview" title="系统概览" description="查看区域心理测评、患者随访和风险分布情况。" />
+    <PageHeader eyebrow="Campus Overview" title="系统概览" description="查看区域心理测评、学生随访和风险分布情况。" />
     <section class="soft-grid">
       <StatCard label="用户总数" :value="stats.userCount||0" icon="User" />
       <StatCard label="测评总次数" :value="stats.recordCount||0" icon="Document" color="var(--accent)" />
-      <StatCard label="患者总数" :value="stats.patientCount||0" icon="FirstAidKit" color="var(--success)" />
+      <StatCard label="学生总数" :value="stats.patientCount||0" icon="FirstAidKit" color="var(--success)" />
       <StatCard label="今日测评" :value="stats.todayCount||0" icon="Calendar" color="var(--warning)" />
     </section>
     <section class="soft-grid">

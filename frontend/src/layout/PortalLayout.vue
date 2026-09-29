@@ -18,7 +18,7 @@
       </div>
     </header>
     <main class="portal-main page-shell"><router-view /></main>
-    <footer class="portal-footer">本系统测评结果仅用于健康筛查参考，不能替代专业医疗诊断</footer>
+    <footer class="portal-footer">本系统测评结果仅用于健康筛查参考，不能替代专业心理评估</footer>
   </div>
 </template>
 <script setup>

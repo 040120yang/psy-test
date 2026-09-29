@@ -78,7 +78,7 @@ public class LoginController {
     }
 
     /**
-     * 注册（公众用户自助注册）
+     * 注册（学生用户自助注册）
      */
     @PostMapping("/register")
     public AjaxResult register(@RequestBody RegisterBody registerBody) {
@@ -106,7 +106,7 @@ public class LoginController {
         update.setPhone(phone);
         userMapper.updateUser(update);
 
-        // 同步更新患者档案（没有则新增）
+        // 同步更新学生档案（没有则新增）
         com.psy.business.domain.Patient exist = patientMapper.selectPatientByUserId(userId);
         com.psy.business.domain.Patient patient = new com.psy.business.domain.Patient();
         patient.setUserId(userId);

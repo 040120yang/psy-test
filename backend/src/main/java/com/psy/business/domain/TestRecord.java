@@ -13,7 +13,7 @@ public class TestRecord extends BaseEntity {
     /** 记录ID */
     private Long recordId;
 
-    /** 测评用户ID */
+    /** 测评学生ID */
     private Long userId;
 
     /** 量表ID */
@@ -46,10 +46,10 @@ public class TestRecord extends BaseEntity {
     /** 用户账号（联查） */
     private String username;
 
-    /** 医生诊断结论 */
+    /** 心理教师诊断结论 */
     private String doctorConclusion;
 
-    /** 医生处方建议 */
+    /** 心理教师关怀建议 */
     private String doctorAdvice;
 
     public String getDoctorConclusion() { return doctorConclusion; }

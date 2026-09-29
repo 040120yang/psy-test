@@ -9,7 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 /**
- * 患者信息管理
+ * 学生信息管理
  */
 @RestController
 @RequestMapping("/patient")
@@ -19,7 +19,7 @@ public class PatientController extends BaseController {
     private PatientService patientService;
 
     /**
-     * 分页查询患者列表
+     * 分页查询学生列表
      */
     @GetMapping("/list")
     public TableDataInfo list(Patient patient) {
@@ -27,7 +27,7 @@ public class PatientController extends BaseController {
     }
 
     /**
-     * 新增患者
+     * 新增学生
      */
     @PostMapping
     public AjaxResult add(@RequestBody Patient patient) {
@@ -35,7 +35,7 @@ public class PatientController extends BaseController {
     }
 
     /**
-     * 修改患者
+     * 修改学生
      */
     @PutMapping
     public AjaxResult edit(@RequestBody Patient patient) {
@@ -43,7 +43,7 @@ public class PatientController extends BaseController {
     }
 
     /**
-     * 删除患者
+     * 删除学生
      */
     @DeleteMapping("/{patientId}")
     public AjaxResult remove(@PathVariable Long patientId) {

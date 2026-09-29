@@ -43,13 +43,13 @@ public class SecurityUtils {
         return user != null && "admin".equals(user.getRoleKey());
     }
 
-    /** 当前用户是否为临床医护人员 */
+    /** 当前用户是否为心理教师/辅导员 */
     public static boolean isDoctor() {
         LoginUser user = getLoginUser();
         return user != null && "doctor".equals(user.getRoleKey());
     }
 
-    /** 当前用户是否为公众用户 */
+    /** 当前用户是否为学生用户 */
     public static boolean isUser() {
         LoginUser user = getLoginUser();
         return user != null && "user".equals(user.getRoleKey());

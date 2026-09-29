@@ -9,31 +9,31 @@ import org.apache.ibatis.annotations.Delete;
 import java.util.List;
 
 /**
- * 患者信息数据层
+ * 学生信息数据层
  */
 @Mapper
 public interface PatientMapper {
 
-    /** 分页/条件查询患者列表 */
+    /** 分页/条件查询学生列表 */
     List<Patient> selectPatientList(@Param("patient") Patient patient);
 
-    /** 根据ID查询患者 */
+    /** 根据ID查询学生 */
     @Select("select * from psy_patient where patient_id = #{patientId}")
     Patient selectPatientById(@Param("patientId") Long patientId);
 
-    /** 新增患者 */
+    /** 新增学生 */
     int insertPatient(Patient patient);
 
-    /** 修改患者 */
+    /** 修改学生 */
     int updatePatient(Patient patient);
 
-    /** 根据用户ID更新患者档案 */
+    /** 根据用户ID更新学生档案 */
     int updatePatientByUserId(Patient patient);
 
-    /** 根据用户ID查询患者 */
+    /** 根据用户ID查询学生 */
     Patient selectPatientByUserId(@Param("userId") Long userId);
 
-    /** 删除患者 */
+    /** 删除学生 */
     @Delete("delete from psy_patient where patient_id = #{patientId}")
     int deletePatientById(@Param("patientId") Long patientId);
 }

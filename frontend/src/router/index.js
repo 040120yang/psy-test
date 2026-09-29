@@ -30,7 +30,7 @@ const adminRoutes = {
   children: [
     { path: 'dashboard', component: () => import('@/views/admin/dashboard.vue'), meta: { title: '系统概览', icon: 'DataAnalysis' } },
     { path: 'records', component: () => import('@/views/admin/records.vue'), meta: { title: '测评记录', icon: 'Document' } },
-    { path: 'patients', component: () => import('@/views/admin/patients.vue'), meta: { title: '患者管理', icon: 'User' } },
+    { path: 'patients', component: () => import('@/views/admin/patients.vue'), meta: { title: '学生管理', icon: 'User' } },
     { path: 'follow', component: () => import('@/views/admin/follow.vue'), meta: { title: '随访管理', icon: 'Bell' } },
     { path: 'knowledge', component: () => import('@/views/admin/knowledge.vue'), meta: { title: '知识库', icon: 'Reading', roles: ['admin'] } },
     { path: 'logs/login', component: () => import('@/views/admin/log/login.vue'), meta: { title: '登录日志', icon: 'Clock', roles: ['admin'] } },

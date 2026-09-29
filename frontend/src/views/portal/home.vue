@@ -15,12 +15,12 @@
     <section><h2 class="section-title">快捷入口</h2><div class="action-grid mt-16">
       <div class="action-card" @click="$router.push('/portal/scales')"><div class="icon" style="background:#2f7d7a"><el-icon><Notebook /></el-icon></div><h3>心理测评</h3><p>选择 SAS、SDS、SCL-90 或 SRSS 量表</p></div>
       <div class="action-card" @click="$router.push('/portal/records')"><div class="icon" style="background:#4f7cf0"><el-icon><Document /></el-icon></div><h3>我的报告</h3><p>查看标准分、等级建议和答题明细</p></div>
-      <div class="action-card" @click="$router.push('/portal/follow')"><div class="icon" style="background:#f59e0b"><el-icon><Bell /></el-icon></div><h3>我的随访</h3><p>查看医生安排的随访时间和状态</p></div>
+      <div class="action-card" @click="$router.push('/portal/follow')"><div class="icon" style="background:#f59e0b"><el-icon><Bell /></el-icon></div><h3>我的随访</h3><p>查看心理教师安排的随访时间和状态</p></div>
       <div class="action-card" @click="$router.push('/portal/coze')"><div class="icon" style="background:#7c5cb0"><el-icon><MagicStick /></el-icon></div><h3>AI 助手</h3><p>获取心理陪伴和健康知识建议</p></div>
     </div></section>
     <section class="soft-grid cols-2">
       <div class="panel"><div class="panel-head"><div><div class="panel-title">最近测评</div><div class="panel-subtitle">最近完成的测评记录</div></div><el-button text type="primary" @click="$router.push('/portal/records')">全部记录</el-button></div><div class="panel-body"><div v-if="records.length" class="timeline-list"><div v-for="item in records.slice(0,4)" :key="item.recordId" class="timeline-item"><h4>{{ item.scaleName }} · <StatusTag :text="item.level" /></h4><p>标准分 {{ item.stdScore }} · {{ item.createTime }}</p></div></div><EmptyPanel v-else title="还没有测评记录" description="完成第一次测评后，这里会显示结果" /></div></div>
-      <div class="panel"><div class="panel-head"><div><div class="panel-title">平台说明</div><div class="panel-subtitle">测评与使用边界</div></div></div><div class="panel-body"><div class="notice">测评结果用于心理健康筛查和辅助参考，不能替代专业医疗诊断。如出现明显不适、持续失眠或伤害自己的念头，请及时联系家人并前往医院就诊。</div><div class="mt-16" style="line-height:2;color:var(--text-2);font-size:13px"><div>系统版本：V2.0</div><div>可用量表：SAS / SDS / SCL-90 / SRSS</div><div>服务支持：AI 助手、随访提醒、消息中心</div></div></div></div>
+      <div class="panel"><div class="panel-head"><div><div class="panel-title">平台说明</div><div class="panel-subtitle">测评与使用边界</div></div></div><div class="panel-body"><div class="notice">测评结果用于心理健康筛查和辅助参考，不能替代专业心理评估。如出现明显不适、持续失眠或伤害自己的念头，请及时联系家人并前往医院就诊。</div><div class="mt-16" style="line-height:2;color:var(--text-2);font-size:13px"><div>系统版本：V2.0</div><div>可用量表：SAS / SDS / SCL-90 / SRSS</div><div>服务支持：AI 助手、随访提醒、消息中心</div></div></div></div>
     </section>
   </div>
 </template>

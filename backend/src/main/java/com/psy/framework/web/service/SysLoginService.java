@@ -86,7 +86,7 @@ public class SysLoginService {
     }
 
     /**
-     * 用户注册：默认注册为公众用户（role_id = 3）
+     * 用户注册：默认注册为学生用户（role_id = 3）
      */
     public void register(String username, String password, String nickname, String sex, Integer age, String phone) {
         if (StringUtils.isEmpty(username)) {
@@ -113,7 +113,7 @@ public class SysLoginService {
         user.setRemark("自助注册用户");
         userMapper.insertUser(user);
 
-        // 自动创建患者档案（仅公众用户）
+        // 自动创建学生档案（仅学生用户）
         com.psy.business.domain.Patient patient = new com.psy.business.domain.Patient();
         patient.setUserId(user.getUserId());
         patient.setPatientName(StringUtils.isEmpty(nickname) ? username : nickname);

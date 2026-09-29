@@ -3,18 +3,18 @@ package com.psy.business.domain;
 import com.psy.common.core.BaseEntity;
 
 /**
- * 患者信息对象 psy_patient
+ * 学生信息对象 psy_patient
  */
 public class Patient extends BaseEntity {
     private static final long serialVersionUID = 1L;
 
-    /** 患者ID */
+    /** 学生ID */
     private Long patientId;
 
-    /** 关联注册用户ID */
+    /** 关联学生账号ID */
     private Long userId;
 
-    /** 患者姓名 */
+    /** 学生姓名 */
     private String patientName;
 
     /** 性别（0男 1女 2未知） */
@@ -32,10 +32,10 @@ public class Patient extends BaseEntity {
     /** 联系地址 */
     private String address;
 
-    /** 病史/主诉 */
+    /** 既往经历/主要困扰 */
     private String medicalHistory;
 
-    /** 患者标签 */
+    /** 学生标签 */
     private String tag;
 
     /** 关联用户账号（联查） */

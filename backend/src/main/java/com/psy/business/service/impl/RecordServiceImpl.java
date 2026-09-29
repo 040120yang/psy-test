@@ -52,7 +52,7 @@ public class RecordServiceImpl implements RecordService {
         if (record == null) {
             throw new ServiceException("测评记录不存在");
         }
-        // 权限：公众用户只能查看自己的记录
+        // 权限：学生用户只能查看自己的记录
         if (SecurityUtils.isUser() && !SecurityUtils.getUserId().equals(record.getUserId())) {
             throw new ServiceException("无权限查看该记录");
         }

@@ -55,7 +55,7 @@ public interface DashboardMapper {
     @Select("select count(1) from psy_follow_up where status = '待随访' and follow_date < curdate()")
     int followOverdue();
 
-    /** 患者标签统计 */
+    /** 学生标签统计 */
     @Select("select ifnull(tag, '未分类') as name, count(1) as value from psy_patient group by tag")
     List<Map<String, Object>> tagDist();
 }

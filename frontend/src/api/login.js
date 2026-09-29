@@ -33,7 +33,7 @@ export function logout() {
   })
 }
 
-/** 用户注册（公众用户自助注册） */
+/** 用户注册（学生用户自助注册） */
 export function register(data) {
   return request({
     url: '/register',

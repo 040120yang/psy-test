@@ -25,7 +25,7 @@ public class FollowUpController {
         return followUpService.adminList(status);
     }
 
-    /** 用户端：我的随访 */
+    /** 学生端：我的随访 */
     @GetMapping("/my")
     public TableDataInfo myList() {
         return followUpService.myList();

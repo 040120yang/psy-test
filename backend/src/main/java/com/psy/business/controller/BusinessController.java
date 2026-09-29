@@ -26,7 +26,7 @@ public class BusinessController {
 
     // ========== 消息中心 ==========
 
-    /** 用户端：我的消息 */
+    /** 学生端：我的消息 */
     @GetMapping("/message/my")
     public TableDataInfo myMessages() {
         Long userId = SecurityUtils.getUserId();
@@ -35,14 +35,14 @@ public class BusinessController {
         return TableDataInfo.success(list, list.size());
     }
 
-    /** 用户端：标记已读 */
+    /** 学生端：标记已读 */
     @PutMapping("/message/read/{id}")
     public AjaxResult readMessage(@PathVariable Long id) {
         jdbcTemplate.update("UPDATE psy_message SET is_read = 1 WHERE id = ?", id);
         return AjaxResult.success();
     }
 
-    /** 用户端：未读消息数 */
+    /** 学生端：未读消息数 */
     @GetMapping("/message/unread")
     public AjaxResult unreadCount() {
         Long userId = SecurityUtils.getUserId();
@@ -111,7 +111,7 @@ public class BusinessController {
         return AjaxResult.success();
     }
 
-    // ========== 诊断结论/处方建议 ==========
+    // ========== 心理评估/关怀建议 ==========
 
     /** 管理端：填写诊断结论 */
     @PutMapping("/record/diagnosis")
@@ -127,7 +127,7 @@ public class BusinessController {
 
     // ========== 历史对比 ==========
 
-    /** 用户端：历史对比数据 */
+    /** 学生端：历史对比数据 */
     @GetMapping("/record/compare")
     public AjaxResult compareHistory() {
         Long userId = SecurityUtils.getUserId();

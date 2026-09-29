@@ -2,7 +2,7 @@
   <div class="register-page">
     <div class="register-card">
       <AppLogo />
-      <div class="title"><h2>创建公众账号</h2><p>注册后即可使用心理测评、报告记录与随访服务</p></div>
+      <div class="title"><h2>创建学生账号</h2><p>注册后即可使用心理测评、报告记录与随访服务</p></div>
       <el-form ref="formRef" :model="form" :rules="rules" label-position="top">
         <div class="form-grid"><el-form-item label="用户名" prop="username"><el-input v-model="form.username" placeholder="3-20 个字符" /></el-form-item><el-form-item label="昵称" prop="nickname"><el-input v-model="form.nickname" placeholder="选填" /></el-form-item></div>
         <div class="form-grid"><el-form-item label="密码" prop="password"><el-input v-model="form.password" type="password" show-password placeholder="不少于 6 位" /></el-form-item><el-form-item label="确认密码" prop="confirmPassword"><el-input v-model="form.confirmPassword" type="password" show-password placeholder="再次输入密码" /></el-form-item></div>
