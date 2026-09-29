@@ -2,7 +2,7 @@
   "name": "psy-test-ui",
   "version": "2.0.0",
   "private": true,
-  "description": "区域智能诊疗辅助诊断系统前端（Vue 3 + Vite + Element Plus）",
+  "description": "校园心理健康智能测评与随访系统前端（Vue 3 + Vite + Element Plus）",
   "scripts": {
     "dev": "vite",
     "build": "vite build",

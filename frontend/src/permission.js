@@ -7,7 +7,7 @@ const whiteList = ['/login', '/register', '/404']
 
 router.beforeEach((to) => {
   NProgress.start()
-  document.title = to.meta.title ? `${to.meta.title} - 区域智能诊疗辅助诊断系统` : '区域智能诊疗辅助诊断系统'
+  document.title = to.meta.title ? `${to.meta.title} - 校园心理健康智能测评与随访系统` : '校园心理健康智能测评与随访系统'
   const token = getToken()
   if (!token) {
     if (whiteList.includes(to.path)) return true

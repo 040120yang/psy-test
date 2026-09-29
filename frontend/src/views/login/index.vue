@@ -3,13 +3,13 @@
     <section class="auth-visual">
       <div class="visual-orb orb-a"></div><div class="visual-orb orb-b"></div>
       <div class="visual-content">
-        <div class="visual-badge">Regional Psychological Care</div>
+        <div class="visual-badge">Campus Mental Health Care</div>
         <h1>让心理测评、专业评估与持续随访连接起来</h1>
-        <p>面向公众用户的在线量表测评，以及面向医护人员的患者档案、诊断与随访管理。</p>
+        <p>面向学生用户的在线量表测评，以及面向心理教师和辅导员的档案、评估与随访管理。</p>
         <div class="visual-features">
           <div><el-icon><CircleCheck /></el-icon><span>SAS / SDS / SCL-90 / SRSS 在线测评</span></div>
           <div><el-icon><CircleCheck /></el-icon><span>自动计分、风险分级与健康建议</span></div>
-          <div><el-icon><CircleCheck /></el-icon><span>医生随访与个案闭环管理</span></div>
+          <div><el-icon><CircleCheck /></el-icon><span>教师随访与个案关怀管理</span></div>
         </div>
       </div>
       <div class="hotline-card"><span>全国心理援助热线</span><strong>12356</strong><small>24 小时提供支持</small></div>

@@ -1,7 +1,7 @@
 <template>
   <div class="app-logo" :class="{ light }">
     <div class="mark"><span></span><span></span><span></span></div>
-    <div class="copy"><strong>区域智能诊疗</strong><small>心理测评与随访系统</small></div>
+    <div class="copy"><strong>校园心理健康</strong><small>智能测评与随访系统</small></div>
   </div>
 </template>
 <script setup>
