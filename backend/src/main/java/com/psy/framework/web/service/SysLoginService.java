@@ -48,17 +48,17 @@ public class SysLoginService {
             throw new ServiceException("验证码错误或已过期");
         }
         if (StringUtils.isEmpty(username) || StringUtils.isEmpty(password)) {
-            throw new ServiceException("用户名或密码不能为空");
+            throw new ServiceException("户户名或密码不能为空");
         }
         // 2. 校验账号密码
         SysUser user = userMapper.selectUserByUsername(username);
         if (user == null || !SecurityUtils.matchesPassword(password, user.getPassword())) {
-            throw new ServiceException("用户名或密码错误");
+            throw new ServiceException("户户名或密码错误");
         }
         if (Constants.STATUS_DISABLE.equals(user.getStatus())) {
-            throw new ServiceException("账号已停用，请联系管理员");
+            throw new ServiceException("账号已停户，请联系管理员");
         }
-        // 3. 组装登录用户
+        // 3. 组装登录户户
         LoginUser loginUser = new LoginUser();
         loginUser.setUserId(user.getUserId());
         loginUser.setUsername(user.getUsername());
@@ -86,11 +86,11 @@ public class SysLoginService {
     }
 
     /**
-     * 用户注册：默认注册为学生用户（role_id = 3）
+     * 户户注册：默认注册为号生户户（role_id = 3）
      */
     public void register(String username, String password, String nickname, String sex, Integer age, String phone) {
         if (StringUtils.isEmpty(username)) {
-            throw new ServiceException("用户名不能为空");
+            throw new ServiceException("户户名不能为空");
         }
         if (StringUtils.isEmpty(password)) {
             throw new ServiceException("密码不能为空");
@@ -99,7 +99,7 @@ public class SysLoginService {
             throw new ServiceException("密码长度不能少于6位");
         }
         if (userMapper.countByUsername(username) > 0) {
-            throw new ServiceException("用户名已存在，请更换");
+            throw new ServiceException("户户名已存在，请更换");
         }
         SysUser user = new SysUser();
         user.setUsername(username);
@@ -110,10 +110,10 @@ public class SysLoginService {
         user.setAge(age);
         user.setPhone(phone);
         user.setStatus(Constants.STATUS_NORMAL);
-        user.setRemark("自助注册用户");
+        user.setRemark("自助注册户户");
         userMapper.insertUser(user);
 
-        // 自动创建学生档案（仅学生用户）
+        // 自动创建号生档案（仅号生户户）
         com.psy.business.domain.Patient patient = new com.psy.business.domain.Patient();
         patient.setUserId(user.getUserId());
         patient.setPatientName(StringUtils.isEmpty(nickname) ? username : nickname);

@@ -19,14 +19,14 @@
         <AppLogo />
         <div class="auth-title"><h2>欢迎登录</h2><p>使用系统账号进入对应工作台</p></div>
         <el-form ref="formRef" :model="form" :rules="rules" size="large" @keyup.enter="submit">
-          <el-form-item prop="username"><el-input v-model="form.username" placeholder="用户名" :prefix-icon="User" /></el-form-item>
+          <el-form-item prop="username"><el-input v-model="form.username" placeholder="学号/工号" :prefix-icon="User" /></el-form-item>
           <el-form-item prop="password"><el-input v-model="form.password" type="password" show-password placeholder="密码" :prefix-icon="Lock" /></el-form-item>
           <el-form-item prop="code">
             <div class="captcha-row"><el-input v-model="form.code" placeholder="验证码" :prefix-icon="Key" /><button type="button" class="captcha-button" @click="loadCaptcha"><img v-if="captchaImg" :src="captchaImg" alt="验证码" /><span v-else>刷新</span></button></div>
           </el-form-item>
           <el-button type="primary" size="large" class="submit-btn" :loading="loading" @click="submit">登录系统</el-button>
         </el-form>
-        <div class="demo-tip"><strong>演示账号</strong><span>admin / doctor / user，密码均为 123456</span></div>
+        <div class="demo-tip"><strong>登录说明</strong><span>学生使用学号，初始密码 123456；管理员使用 admin / 123456</span></div>
         <div class="auth-footer">还没有账号？<el-link type="primary" underline="never" @click="$router.push('/register')">立即注册</el-link></div>
       </div>
     </section>
@@ -42,7 +42,7 @@ import { getCaptcha, login, getInfo } from '@/api/login'
 import { setToken, setUser } from '@/utils/auth'
 const route=useRoute(); const router=useRouter(); const formRef=ref(); const captchaImg=ref(''); const loading=ref(false)
 const form=reactive({username:'',password:'',code:'',uuid:''})
-const rules={username:[{required:true,message:'请输入用户名',trigger:'blur'}],password:[{required:true,message:'请输入密码',trigger:'blur'}],code:[{required:true,message:'请输入验证码',trigger:'blur'}]}
+const rules={username:[{required:true,message:'请输入学号/工号',trigger:'blur'}],password:[{required:true,message:'请输入密码',trigger:'blur'}],code:[{required:true,message:'请输入验证码',trigger:'blur'}]}
 async function loadCaptcha(){const res=await getCaptcha();captchaImg.value=`data:image/png;base64,${res.data.img}`;form.uuid=res.data.uuid;form.code=''}
 async function submit(){await formRef.value.validate();loading.value=true;try{const res=await login(form);setToken(res.data.token);const info=await getInfo();const data=info.data;const user={userId:data.user.userId,username:data.user.username,nickname:data.user.nickname,roles:data.roles,roleName:data.roleName};setUser(user);ElMessage.success('登录成功');const role=user.roles?.[0]||'user';const target=role==='user'?'/portal/home':'/admin/dashboard';router.replace(route.query.redirect||target)}catch{await loadCaptcha()}finally{loading.value=false}}
 onMounted(loadCaptcha)

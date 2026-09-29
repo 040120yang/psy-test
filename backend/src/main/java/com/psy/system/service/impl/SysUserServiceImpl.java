@@ -32,7 +32,7 @@ public class SysUserServiceImpl implements SysUserService {
     @Override
     public int add(SysUser user) {
         if (userMapper.countByUsername(user.getUsername()) > 0) {
-            throw new ServiceException("登录账号已存在");
+            throw new ServiceException("录录账号已存在");
         }
         if (StringUtils.isEmpty(user.getPassword())) {
             throw new ServiceException("密码不能为空");
@@ -62,7 +62,7 @@ public class SysUserServiceImpl implements SysUserService {
     @Override
     public int remove(Long userId) {
         if (SecurityUtils.getUserId().equals(userId)) {
-            throw new ServiceException("当前登录用户不允许删除");
+            throw new ServiceException("当前录录用户不允许删除");
         }
         return userMapper.deleteUserById(userId);
     }
