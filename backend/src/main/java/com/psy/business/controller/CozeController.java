@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
+import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.*;
@@ -44,7 +45,10 @@ public class CozeController {
         SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
         factory.setConnectTimeout(10000);
         factory.setReadTimeout(120000);
-        return new RestTemplate(factory);
+        RestTemplate template = new RestTemplate(factory);
+        template.getMessageConverters().removeIf(converter -> converter instanceof StringHttpMessageConverter);
+        template.getMessageConverters().add(0, new StringHttpMessageConverter(java.nio.charset.StandardCharsets.UTF_8));
+        return template;
     }
 
     public static class ChatReq {
@@ -123,7 +127,8 @@ public class CozeController {
             return result;
         }
 
-        StringBuilder answer = new StringBuilder();
+        StringBuilder deltaAnswer = new StringBuilder();
+        String completedAnswer = "";
         String currentEvent = "";
         for (String line : streamBody.split("\\r?\\n")) {
             if (line.startsWith("event:")) {
@@ -150,16 +155,19 @@ public class CozeController {
             String type = node.path("type").asText("");
             boolean isAnswerDelta = "conversation.message.delta".equals(currentEvent)
                     && (StringUtils.isEmpty(type) || "answer".equals(type));
-            if (StringUtils.isNotEmpty(content)
-                    && (isAnswerDelta || ("assistant".equals(role) && "answer".equals(type)))) {
-                answer.append(content);
+            if (StringUtils.isNotEmpty(content) && isAnswerDelta) {
+                deltaAnswer.append(content);
+            } else if (StringUtils.isNotEmpty(content)
+                    && "conversation.message.completed".equals(currentEvent)
+                    && "assistant".equals(role) && "answer".equals(type)) {
+                completedAnswer = content;
             }
 
             if (currentEvent.endsWith(".failed")) {
                 result.error = compactError(node.toString());
             }
         }
-        result.reply = answer.toString();
+        result.reply = deltaAnswer.length() > 0 ? deltaAnswer.toString() : completedAnswer;
         return result;
     }
 
