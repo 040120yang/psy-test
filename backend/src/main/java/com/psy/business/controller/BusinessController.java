@@ -5,6 +5,7 @@ import com.psy.business.domain.Message;
 import com.psy.common.core.AjaxResult;
 import com.psy.common.core.TableDataInfo;
 import com.psy.common.exception.ServiceException;
+import com.psy.common.utils.StringUtils;
 import com.psy.framework.aspectj.annotation.OperLog;
 import com.psy.framework.security.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -54,10 +55,19 @@ public class BusinessController {
         return AjaxResult.success(count);
     }
 
-    /** 管理端：发送消息 */
+    /** 管理端：发送消息（仅心理教师或系统管理员可下发） */
     @OperLog(title = "消息管理", businessType = OperLog.INSERT)
     @PostMapping("/message/send")
     public AjaxResult sendMessage(@RequestBody Message message) {
+        if (!SecurityUtils.isAdmin() && !SecurityUtils.isDoctor()) {
+            throw new ServiceException("无权限操作，仅心理教师或系统管理员可下发通知");
+        }
+        if (StringUtils.isEmpty(message.getTitle())) {
+            throw new ServiceException("消息标题不能为空");
+        }
+        if (StringUtils.isEmpty(message.getContent())) {
+            throw new ServiceException("消息内容不能为空");
+        }
         String sql = "INSERT INTO psy_message (user_id, title, content, type) VALUES (?, ?, ?, ?)";
         jdbcTemplate.update(sql, message.getUserId(), message.getTitle(), message.getContent(), message.getType());
         return AjaxResult.success();
@@ -79,13 +89,21 @@ public class BusinessController {
         return TableDataInfo.success(list, list.size());
     }
 
-    /** 文章详情 */
+    /** 文章详情（学生仅可查看已发布内容，避免读到草稿或已下架文章） */
     @GetMapping("/knowledge/{id}")
     public AjaxResult knowledgeDetail(@PathVariable Long id) {
-        jdbcTemplate.update("UPDATE psy_knowledge SET view_count = view_count + 1 WHERE id = ?", id);
-        Knowledge k = jdbcTemplate.queryForObject(
+        List<Knowledge> list = jdbcTemplate.query(
             "SELECT * FROM psy_knowledge WHERE id = ?",
             new BeanPropertyRowMapper<>(Knowledge.class), id);
+        if (list.isEmpty()) {
+            throw new ServiceException("文章不存在");
+        }
+        Knowledge k = list.get(0);
+        boolean staff = SecurityUtils.isAdmin() || SecurityUtils.isDoctor();
+        if (!staff && (k.getStatus() == null || k.getStatus() != 1)) {
+            throw new ServiceException("文章不存在或已下架");
+        }
+        jdbcTemplate.update("UPDATE psy_knowledge SET view_count = view_count + 1 WHERE id = ?", id);
         return AjaxResult.success(k);
     }
 
@@ -122,17 +140,60 @@ public class BusinessController {
 
     // ========== 心理评估/关怀建议 ==========
 
-    /** 管理端：填写诊断结论 */
+    /** 管理端：填写心理评估结论与关怀建议（保存后自动通知该记录所属学生） */
     @OperLog(title = "测评记录-心理评估", businessType = OperLog.UPDATE)
     @PutMapping("/record/diagnosis")
     public AjaxResult saveDiagnosis(@RequestBody Map<String, Object> body) {
-        Long recordId = Long.valueOf(body.get("recordId").toString());
-        String conclusion = (String) body.get("conclusion");
-        String advice = (String) body.get("advice");
+        // 仅系统管理员或心理教师/医护人员可填写心理评估
+        if (!SecurityUtils.isAdmin() && !SecurityUtils.isDoctor()) {
+            throw new ServiceException("无权限操作，仅系统管理员或心理教师可填写心理评估");
+        }
+
+        Object recordIdObj = body.get("recordId");
+        if (recordIdObj == null || StringUtils.isEmpty(recordIdObj.toString())) {
+            throw new ServiceException("测评记录ID不能为空");
+        }
+        Long recordId;
+        try {
+            recordId = Long.valueOf(recordIdObj.toString().trim());
+        } catch (NumberFormatException e) {
+            throw new ServiceException("测评记录ID格式不正确");
+        }
+        String conclusion = body.get("conclusion") == null ? null : body.get("conclusion").toString();
+        String advice = body.get("advice") == null ? null : body.get("advice").toString();
+
+        // 反查记录归属用户，确保评估意见推送给正确的学生
+        List<Map<String, Object>> records = jdbcTemplate.queryForList(
+            "SELECT record_id AS recordId, user_id AS userId FROM psy_test_record WHERE record_id = ?", recordId);
+        if (records.isEmpty()) {
+            throw new ServiceException("测评记录不存在");
+        }
+        Object userIdObj = records.get(0).get("userId");
+        Long userId = userIdObj == null ? null : Long.valueOf(userIdObj.toString());
+
         jdbcTemplate.update(
             "UPDATE psy_test_record SET doctor_conclusion = ?, doctor_advice = ? WHERE record_id = ?",
             conclusion, advice, recordId);
-        return AjaxResult.success();
+
+        // 自动向该学生推送测评评估结果通知（消息中心可接收）
+        if (userId != null) {
+            try {
+                StringBuilder content = new StringBuilder("您的测评记录已完成心理教师评估。");
+                if (StringUtils.isNotEmpty(conclusion)) {
+                    content.append("评估结论：").append(conclusion).append("；");
+                }
+                if (StringUtils.isNotEmpty(advice)) {
+                    content.append("关怀建议：").append(advice).append("；");
+                }
+                content.append("详情可在“我的记录”中查看。");
+                jdbcTemplate.update(
+                    "INSERT INTO psy_message (user_id, title, content, type) VALUES (?, ?, ?, 'result')",
+                    userId, "测评评估结果通知", content.toString());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+        return AjaxResult.success("评估建议已保存");
     }
 
     // ========== 历史对比 ==========

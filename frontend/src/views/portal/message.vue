@@ -14,9 +14,10 @@ import PageHeader from '@/components/PageHeader.vue'
 import EmptyPanel from '@/components/EmptyPanel.vue'
 import { listMessages, markMessageRead } from '@/api/business'
 const rows=ref([]); const unread=computed(()=>rows.value.filter(i=>i.isRead===0).length)
+function syncBadge(){window.dispatchEvent(new CustomEvent('portal-msg-read'))}
 async function load(){const res=await listMessages();rows.value=res.rows||[]}
-async function open(item){if(item.isRead===0){await markMessageRead(item.id);item.isRead=1}ElMessageBox.alert(item.content,item.title,{confirmButtonText:'知道了'})}
-async function readAll(){for(const item of rows.value.filter(i=>i.isRead===0))await markMessageRead(item.id);rows.value.forEach(i=>i.isRead=1)}
+async function open(item){if(item.isRead===0){await markMessageRead(item.id);item.isRead=1;syncBadge()}ElMessageBox.alert(item.content,item.title,{confirmButtonText:'知道了'})}
+async function readAll(){for(const item of rows.value.filter(i=>i.isRead===0))await markMessageRead(item.id);rows.value.forEach(i=>i.isRead=1);syncBadge()}
 onMounted(load)
 </script>
 <style scoped>

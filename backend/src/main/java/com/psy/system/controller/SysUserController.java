@@ -8,6 +8,7 @@ import com.psy.framework.security.SecurityUtils;
 import com.psy.system.domain.SysRole;
 import com.psy.system.domain.SysUser;
 import com.psy.system.mapper.SysRoleMapper;
+import com.psy.system.mapper.SysUserMapper;
 import com.psy.system.service.SysUserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -25,11 +26,15 @@ public class SysUserController extends BaseController {
     @Autowired
     private SysRoleMapper roleMapper;
 
+    @Autowired
+    private SysUserMapper userMapper;
+
     /**
      * 查询用户列表
      */
     @GetMapping("/list")
     public TableDataInfo list(SysUser user) {
+        requireAdmin();
         return userService.list(user);
     }
 
@@ -38,7 +43,19 @@ public class SysUserController extends BaseController {
      */
     @GetMapping("/roles")
     public AjaxResult roles() {
+        requireAdmin();
         return AjaxResult.success(roleMapper.selectRoleList());
+    }
+
+    /**
+     * 获取心理教师列表（学生管理-负责教师下拉框）
+     */
+    @GetMapping("/doctors")
+    public AjaxResult doctors() {
+        if (!SecurityUtils.isAdmin() && !SecurityUtils.isDoctor()) {
+            throw new ServiceException("无权限查看心理教师列表");
+        }
+        return AjaxResult.success(userMapper.selectUsersByRoleKey("doctor"));
     }
 
     /**

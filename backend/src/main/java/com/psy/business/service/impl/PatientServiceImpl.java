@@ -50,11 +50,10 @@ public class PatientServiceImpl implements PatientService {
         if (StringUtils.isEmpty(patient.getPatientName())) {
             throw new ServiceException("学生姓名不能为空");
         }
-        if (SecurityUtils.isUser()) {
-            patient.setUserId(SecurityUtils.getUserId());
-        } else {
-            createStudentAccount(patient);
-        }
+        // 学生档案的新增会同步创建登录账号，属账号生命周期管理，仅系统管理员可执行；
+        // 学生本人的档案在自助注册与个人中心维护时由注册/资料更新流程直接写入，不走此入口。
+        requireAdmin("新增学生档案");
+        createStudentAccount(patient);
         return patientMapper.insertPatient(patient);
     }
 
@@ -83,7 +82,12 @@ public class PatientServiceImpl implements PatientService {
             userUpdate.setPhone(patient.getPhone());
             userMapper.updateUser(userUpdate);
         } else if (!SecurityUtils.isUser()) {
+            requireAdmin("为该学生创建登录账号");
             createStudentAccount(patient);
+        }
+        // 负责教师的指派属管理员职责：非管理员编辑时保持原负责教师不变
+        if (!SecurityUtils.isAdmin()) {
+            patient.setTeacherId(exist.getTeacherId());
         }
         return patientMapper.updatePatient(patient);
     }
@@ -95,15 +99,27 @@ public class PatientServiceImpl implements PatientService {
         if (exist == null) {
             throw new ServiceException("学生不存在");
         }
-        if (SecurityUtils.isUser() && exist.getUserId() != null
-                && !SecurityUtils.getUserId().equals(exist.getUserId())) {
-            throw new ServiceException("无权限删除该学生信息");
+        if (SecurityUtils.isUser()) {
+            if (exist.getUserId() != null
+                    && !SecurityUtils.getUserId().equals(exist.getUserId())) {
+                throw new ServiceException("无权限删除该学生信息");
+            }
+        } else {
+            // 删除学生会同步逻辑删除登录账号，属账号生命周期管理，仅系统管理员可执行
+            requireAdmin("删除学生档案");
         }
         int rows = patientMapper.deletePatientById(patientId);
         if (!SecurityUtils.isUser() && exist.getUserId() != null) {
             userMapper.deleteUserById(exist.getUserId());
         }
         return rows;
+    }
+
+    /** 校验当前用户是否为系统管理员 */
+    private void requireAdmin(String action) {
+        if (!SecurityUtils.isAdmin()) {
+            throw new ServiceException("无权限操作，" + action + "仅系统管理员可执行");
+        }
     }
 
     private void createStudentAccount(Patient patient) {

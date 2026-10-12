@@ -22,10 +22,11 @@ public class ScaleController extends BaseController {
     private ScaleService scaleService;
 
     /**
-     * 分页查询量表列表
+     * 分页查询量表列表（心理教师只读，用于测评记录筛选）
      */
     @GetMapping("/list")
     public TableDataInfo list(Scale scale) {
+        requireAdminOrDoctor();
         return scaleService.list(scale);
     }
 
@@ -62,6 +63,12 @@ public class ScaleController extends BaseController {
     private void requireAdmin() {
         if (!SecurityUtils.isAdmin()) {
             throw new ServiceException("无权限操作，仅系统管理员可管理量表");
+        }
+    }
+
+    private void requireAdminOrDoctor() {
+        if (!SecurityUtils.isAdmin() && !SecurityUtils.isDoctor()) {
+            throw new ServiceException("无权限操作，仅系统管理员或心理教师可查看量表");
         }
     }
 }

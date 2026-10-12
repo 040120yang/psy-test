@@ -7,6 +7,7 @@
         <el-menu-item index="/admin/records"><el-icon><Document /></el-icon><template #title>测评记录</template></el-menu-item>
         <el-menu-item index="/admin/patients"><el-icon><User /></el-icon><template #title>学生管理</template></el-menu-item>
         <el-menu-item index="/admin/follow"><el-icon><Bell /></el-icon><template #title>随访管理</template></el-menu-item>
+        <el-menu-item index="/admin/chat"><el-icon><ChatLineSquare /></el-icon><template #title>沟通中心</template></el-menu-item>
         <div class="menu-caption">内容管理</div>
         <el-menu-item index="/admin/knowledge"><el-icon><Reading /></el-icon><template #title>知识库</template></el-menu-item>
         <template v-if="isAdmin">

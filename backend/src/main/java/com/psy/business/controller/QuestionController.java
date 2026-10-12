@@ -22,18 +22,20 @@ public class QuestionController extends BaseController {
     private QuestionService questionService;
 
     /**
-     * 分页查询题目列表
+     * 分页查询题目列表（管理端题目管理使用）
      */
     @GetMapping("/list")
     public TableDataInfo list(Question question) {
+        requireAdmin();
         return questionService.list(question);
     }
 
     /**
-     * 根据量表ID查询全部题目
+     * 根据量表ID查询全部题目（管理端题目管理使用）
      */
     @GetMapping("/listByScale")
     public AjaxResult listByScale(@RequestParam Long scaleId) {
+        requireAdmin();
         return AjaxResult.success(questionService.listByScale(scaleId));
     }
 

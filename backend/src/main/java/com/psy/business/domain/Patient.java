@@ -42,6 +42,15 @@ public class Patient extends BaseEntity {
     /** 关联用户账号（联查） */
     private String username;
 
+    /** 关联用户昵称（联查） */
+    private String nickname;
+
+    /** 负责教师用户ID */
+    private Long teacherId;
+
+    /** 负责教师姓名（联查） */
+    private String teacherName;
+
     /** 新建学生账户时使用的初始密码（仅接收入参，不返回前端） */
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
@@ -132,6 +141,30 @@ public class Patient extends BaseEntity {
 
     public void setUsername(String username) {
         this.username = username;
+    }
+
+    public String getNickname() {
+        return nickname;
+    }
+
+    public void setNickname(String nickname) {
+        this.nickname = nickname;
+    }
+
+    public Long getTeacherId() {
+        return teacherId;
+    }
+
+    public void setTeacherId(Long teacherId) {
+        this.teacherId = teacherId;
+    }
+
+    public String getTeacherName() {
+        return teacherName;
+    }
+
+    public void setTeacherName(String teacherName) {
+        this.teacherName = teacherName;
     }
 
     public String getPassword() {

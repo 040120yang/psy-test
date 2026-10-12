@@ -1,5 +1,6 @@
 package com.psy.system.domain;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.psy.common.core.BaseEntity;
 
 /**
@@ -14,7 +15,8 @@ public class SysUser extends BaseEntity {
     /** 录录账号 */
     private String username;
 
-    /** 密码 */
+    /** 密码（仅接收入参，任何接口都不向前端返回） */
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
 
     /** 昵称 */

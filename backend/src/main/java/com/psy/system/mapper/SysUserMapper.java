@@ -45,4 +45,11 @@ public interface SysUserMapper {
     /** 校验用户名唯一 */
     @Select("select count(1) from sys_user where username = #{username} and del_flag = '0'")
     int countByUsername(@Param("username") String username);
+
+    /** 按角色标识查询可用用户（如心理教师下拉框） */
+    @Select("select su.user_id, su.username, su.nickname, su.role_id, su.status, su.del_flag " +
+            "from sys_user su left join sys_role sr on su.role_id = sr.role_id " +
+            "where sr.role_key = #{roleKey} and su.del_flag = '0' and su.status = '0' " +
+            "order by su.user_id")
+    List<SysUser> selectUsersByRoleKey(@Param("roleKey") String roleKey);
 }

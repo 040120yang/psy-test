@@ -9,6 +9,11 @@ export function listRoles() {
   return request({ url: '/system/user/roles', method: 'get' })
 }
 
+/** 心理教师列表（学生管理-负责教师下拉框） */
+export function listDoctors() {
+  return request({ url: '/system/user/doctors', method: 'get' })
+}
+
 export function addUser(data) {
   return request({ url: '/system/user', method: 'post', data })
 }

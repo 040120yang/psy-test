@@ -16,12 +16,16 @@
         <result property="createTime"     column="create_time"/>
         <result property="updateTime"     column="update_time"/>
         <result property="username"       column="username"/>
+        <result property="nickname"       column="nickname"/>
+        <result property="teacherId"      column="teacher_id"/>
+        <result property="teacherName"    column="teacher_name"/>
     </resultMap>
 
     <sql id="selectPatientVo">
-        select pp.*, su.username
+        select pp.*, su.username, su.nickname, tu.nickname as teacher_name
         from psy_patient pp
         left join sys_user su on pp.user_id = su.user_id
+        left join sys_user tu on pp.teacher_id = tu.user_id
     </sql>
 
     <select id="selectPatientList" parameterType="com.psy.business.domain.Patient" resultMap="PatientResult">
@@ -57,6 +61,7 @@
             <if test="address != null">address = #{address},</if>
             <if test="medicalHistory != null">medical_history = #{medicalHistory},</if>
             <if test="tag != null">tag = #{tag},</if>
+            teacher_id = #{teacherId},
         </set>
         where patient_id = #{patientId}
     </update>
