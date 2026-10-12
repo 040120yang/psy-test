@@ -16,7 +16,7 @@ spring:
     # 修改为你的 MySQL 账号密码
     url: jdbc:mysql://localhost:3306/psy_test?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
     username: root
-    password: root
+    password: 123456
     druid:
       initial-size: 5
       min-idle: 5
@@ -52,8 +52,8 @@ token:
 # 访问令牌：https://www.coze.cn/open/oauth/pats 申请个人访问令牌（格式 pat_xxx）
 # 智能体ID：扣子智能体开发页 URL 中 bot 参数后的数字；发布时需勾选「API」
 coze:
-  api-token: "${COZE_API_TOKEN:}"
-  bot-id: "${COZE_BOT_ID:7640438321206067234}"
+  api-token: "pat_8SaUCxwpaR6bMIHLC530yHnkTOTSCoWwO0Od6kDHcUqZEXLKmS1ifldchLh8BcEN"
+  bot-id: "7640438321206067234"
 
 logging:
   level:
