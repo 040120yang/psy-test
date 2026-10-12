@@ -13,8 +13,10 @@ import { ElMessage, ElMessageBox } from 'element-plus'
 import PageHeader from '@/components/PageHeader.vue'
 import EmptyPanel from '@/components/EmptyPanel.vue'
 import { listKnowledge, addKnowledge, updateKnowledge, delKnowledge } from '@/api/business'
+import { getUser } from '@/utils/auth'
+const currentUser=getUser()||{}
 const rows=ref([]); const category=ref(''); const categories=['情绪管理','压力调适','睡眠健康','人际交往','亲子关系','心理科普','危机支持','自我关怀']; const visible=ref(false); const form=reactive(blank())
-function blank(){return {id:null,title:'',category:'心理科普',author:'系统管理员',summary:'',content:''}}
+function blank(){return {id:null,title:'',category:'心理科普',author:currentUser.nickname||currentUser.username||'',summary:'',content:''}}
 async function load(){try{const res=await listKnowledge({category:category.value});rows.value=res.rows||[]}catch{rows.value=[]}}
 function openAdd(){Object.assign(form,blank());visible.value=true}
 function openEdit(row){Object.assign(form,blank(),row);visible.value=true}

@@ -5,6 +5,7 @@ import com.psy.business.service.QuestionService;
 import com.psy.common.core.AjaxResult;
 import com.psy.common.core.TableDataInfo;
 import com.psy.common.exception.ServiceException;
+import com.psy.framework.aspectj.annotation.OperLog;
 import com.psy.framework.security.SecurityUtils;
 import com.psy.system.controller.BaseController;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,6 +40,7 @@ public class QuestionController extends BaseController {
     /**
      * 新增题目
      */
+    @OperLog(title = "题目管理", businessType = OperLog.INSERT)
     @PostMapping
     public AjaxResult add(@RequestBody Question question) {
         requireAdmin();
@@ -48,6 +50,7 @@ public class QuestionController extends BaseController {
     /**
      * 修改题目
      */
+    @OperLog(title = "题目管理", businessType = OperLog.UPDATE)
     @PutMapping
     public AjaxResult edit(@RequestBody Question question) {
         requireAdmin();
@@ -57,6 +60,7 @@ public class QuestionController extends BaseController {
     /**
      * 删除题目
      */
+    @OperLog(title = "题目管理", businessType = OperLog.DELETE)
     @DeleteMapping("/{questionId}")
     public AjaxResult remove(@PathVariable Long questionId) {
         requireAdmin();

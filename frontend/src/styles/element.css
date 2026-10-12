@@ -19,7 +19,13 @@
 .el-input__wrapper, .el-select__wrapper, .el-textarea__inner { border-radius: 10px; box-shadow: 0 0 0 1px var(--line) inset; }
 .el-input__wrapper.is-focus, .el-select__wrapper.is-focused { box-shadow: 0 0 0 1px var(--primary) inset, 0 0 0 3px var(--primary-soft); }
 .el-table { --el-table-border-color: var(--line); --el-table-header-bg-color: #f7fafc; --el-table-row-hover-bg-color: #f4faf9; border-radius: 12px; }
-.el-table th.el-table__cell { color: var(--text-2); font-weight: 700; }
+.el-table th.el-table__cell { height: 48px; color: var(--text-2); font-weight: 700; }
+.el-table td.el-table__cell { height: 68px; }
+.el-table .cell { white-space: nowrap; line-height: 1.5; }
+.el-table .el-button { margin-left: 0; margin-right: 6px; padding: 7px 8px; font-size: 13px; }
+.el-table .el-button:last-child { margin-right: 0; }
+.el-table .el-table__fixed-right .cell { overflow: visible; padding-left: 8px; padding-right: 8px; }
+.el-table .el-table__fixed-right .el-button { flex: none; margin-right: 2px; padding: 6px 5px; font-size: 12px; }
 .el-dialog { border-radius: 18px; overflow: hidden; }
 .el-dialog__header { padding: 20px 22px 12px; border-bottom: 1px solid var(--line); }
 .el-dialog__body { padding: 20px 22px; }
@@ -30,3 +36,5 @@
 .el-form-item__label { font-weight: 600; }
 .el-dropdown-menu { border-radius: 12px; padding: 6px; }
 .el-dropdown-menu__item { border-radius: 8px; }
+.el-empty { padding: 46px 0; }
+.el-pagination { padding: 0 2px; }

@@ -3,6 +3,7 @@ package com.psy.system.controller;
 import com.psy.common.core.AjaxResult;
 import com.psy.common.core.TableDataInfo;
 import com.psy.common.exception.ServiceException;
+import com.psy.framework.aspectj.annotation.OperLog;
 import com.psy.framework.security.SecurityUtils;
 import com.psy.system.domain.SysRole;
 import com.psy.system.domain.SysUser;
@@ -43,6 +44,7 @@ public class SysUserController extends BaseController {
     /**
      * 新增用户
      */
+    @OperLog(title = "用户管理", businessType = OperLog.INSERT)
     @PostMapping
     public AjaxResult add(@RequestBody SysUser user) {
         requireAdmin();
@@ -52,6 +54,7 @@ public class SysUserController extends BaseController {
     /**
      * 修改用户
      */
+    @OperLog(title = "用户管理", businessType = OperLog.UPDATE)
     @PutMapping
     public AjaxResult edit(@RequestBody SysUser user) {
         requireAdmin();
@@ -61,6 +64,7 @@ public class SysUserController extends BaseController {
     /**
      * 删除用户
      */
+    @OperLog(title = "用户管理", businessType = OperLog.DELETE)
     @DeleteMapping("/{userId}")
     public AjaxResult remove(@PathVariable Long userId) {
         requireAdmin();
@@ -70,6 +74,7 @@ public class SysUserController extends BaseController {
     /**
      * 重置密码
      */
+    @OperLog(title = "用户管理-重置密码", businessType = OperLog.UPDATE)
     @PutMapping("/resetPwd")
     public AjaxResult resetPwd(@RequestBody SysUser user) {
         requireAdmin();

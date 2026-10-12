@@ -4,6 +4,8 @@ import com.psy.business.domain.Knowledge;
 import com.psy.business.domain.Message;
 import com.psy.common.core.AjaxResult;
 import com.psy.common.core.TableDataInfo;
+import com.psy.common.exception.ServiceException;
+import com.psy.framework.aspectj.annotation.OperLog;
 import com.psy.framework.security.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.BeanPropertyRowMapper;
@@ -53,6 +55,7 @@ public class BusinessController {
     }
 
     /** 管理端：发送消息 */
+    @OperLog(title = "消息管理", businessType = OperLog.INSERT)
     @PostMapping("/message/send")
     public AjaxResult sendMessage(@RequestBody Message message) {
         String sql = "INSERT INTO psy_message (user_id, title, content, type) VALUES (?, ?, ?, ?)";
@@ -87,8 +90,10 @@ public class BusinessController {
     }
 
     /** 管理端：新增文章 */
+    @OperLog(title = "知识库管理", businessType = OperLog.INSERT)
     @PostMapping("/knowledge")
     public AjaxResult addKnowledge(@RequestBody Knowledge k) {
+        requireAdminOrDoctor();
         jdbcTemplate.update(
             "INSERT INTO psy_knowledge (title, category, summary, content, author) VALUES (?, ?, ?, ?, ?)",
             k.getTitle(), k.getCategory(), k.getSummary(), k.getContent(), k.getAuthor());
@@ -96,8 +101,10 @@ public class BusinessController {
     }
 
     /** 管理端：修改文章 */
+    @OperLog(title = "知识库管理", businessType = OperLog.UPDATE)
     @PutMapping("/knowledge")
     public AjaxResult updateKnowledge(@RequestBody Knowledge k) {
+        requireAdminOrDoctor();
         jdbcTemplate.update(
             "UPDATE psy_knowledge SET title = ?, category = ?, summary = ?, content = ? WHERE id = ?",
             k.getTitle(), k.getCategory(), k.getSummary(), k.getContent(), k.getId());
@@ -105,8 +112,10 @@ public class BusinessController {
     }
 
     /** 管理端：删除文章 */
+    @OperLog(title = "知识库管理", businessType = OperLog.DELETE)
     @DeleteMapping("/knowledge/{id}")
     public AjaxResult deleteKnowledge(@PathVariable Long id) {
+        requireAdminOrDoctor();
         jdbcTemplate.update("DELETE FROM psy_knowledge WHERE id = ?", id);
         return AjaxResult.success();
     }
@@ -114,6 +123,7 @@ public class BusinessController {
     // ========== 心理评估/关怀建议 ==========
 
     /** 管理端：填写诊断结论 */
+    @OperLog(title = "测评记录-心理评估", businessType = OperLog.UPDATE)
     @PutMapping("/record/diagnosis")
     public AjaxResult saveDiagnosis(@RequestBody Map<String, Object> body) {
         Long recordId = Long.valueOf(body.get("recordId").toString());
@@ -144,8 +154,10 @@ public class BusinessController {
     /** 操作日志列表 */
     @GetMapping("/log/oper")
     public TableDataInfo operLog() {
+        requireAdmin();
         List<Map<String, Object>> list = jdbcTemplate.queryForList(
-            "SELECT oper_id as operId, title, oper_name as operName, oper_url as operUrl, " +
+            "SELECT oper_id as operId, title, business_type as businessType, " +
+            "oper_name as operName, oper_url as operUrl, " +
             "oper_ip as operIp, status, error_msg as errorMsg, oper_time as operTime " +
             "FROM sys_oper_log ORDER BY oper_time DESC LIMIT 200");
         return TableDataInfo.success(list, list.size());
@@ -154,9 +166,22 @@ public class BusinessController {
     /** 登录日志列表 */
     @GetMapping("/log/login")
     public TableDataInfo loginLog() {
+        requireAdmin();
         List<Map<String, Object>> list = jdbcTemplate.queryForList(
             "SELECT info_id as infoId, user_name as userName, ipaddr, status, msg, " +
             "login_time as loginTime FROM sys_login_log ORDER BY login_time DESC LIMIT 200");
         return TableDataInfo.success(list, list.size());
+    }
+
+    private void requireAdmin() {
+        if (!SecurityUtils.isAdmin()) {
+            throw new ServiceException("无权限查看系统日志");
+        }
+    }
+
+    private void requireAdminOrDoctor() {
+        if (!SecurityUtils.isAdmin() && !SecurityUtils.isDoctor()) {
+            throw new ServiceException("无权限操作，仅系统管理员或医护人员可管理知识库");
+        }
     }
 }

@@ -5,7 +5,7 @@
 基于 **SpringBoot + Vue 前后端分离** 架构的校园心理健康智能测评与随访系统，项目模板参照 **若依（RuoYi-Vue）** 框架的工程组织、接口风格与分层思想实现。系统采用**双端结构**（对应“学生心理服务 + 心理教师支持”设计）：
 
 - **学生端**（`/portal`，面向学生用户）：工作台首页（我的统计 + 快捷操作）、心理测评（选择量表 → 在线答题 → 测评报告）、我的测评记录、**自助注册**（登录页可注册学生账号）
-- **管理端**（`/admin`，面向系统管理员/心理教师/辅导员）：系统概览、全部测评记录、学生管理、系统管理（用户/量表/题目）
+- **管理端**（`/admin`，面向系统管理员/心理教师/辅导员）：系统概览、测评记录、学生管理、随访管理、知识库、日志及系统管理
 
 登录后系统根据角色自动进入对应端：`user`（学生用户）→ 学生端；`admin`/`doctor` → 管理端。
 
@@ -35,21 +35,23 @@ psy-test/
 │       │   ├── common/           # 通用模块：AjaxResult/TableDataInfo/BaseEntity/分页/异常
 │       │   ├── framework/        # 框架模块：JWT 认证过滤器/令牌服务/验证码/登录服务/跨域
 │       │   ├── system/           # 系统模块：用户管理（角色：admin/doctor/user）
-│       │   └── business/         # 业务模块：量表/题目/测评/记录/学生/统计
+│       │   └── business/         # 业务模块：量表/题目/测评/学生/随访/消息/知识库/日志
 │       └── resources/
 │           ├── application.yml   # 数据源与令牌配置
 │           └── mapper/           # MyBatis XML
 ├── frontend/                     # Vue 3 + Vite 前端工程（双端入口）
 │   ├── package.json
-│   ├── vue.config.js             # 端口 8088，/dev-api 代理到 8080
+│   ├── vite.config.js            # 端口 8088，/dev-api 代理到 8080
 │   └── src/
 │       ├── api/                  # 接口定义
 │       ├── layout/               # PortalLayout（学生端顶栏布局）+ AdminLayout（管理端侧边栏布局）
-│       ├── views/portal/         # 学生端页面：工作台首页 / 量表选择 / 在线答题 / 测评报告 / 我的测评记录
-│       ├── views/admin/          # 管理端页面：系统概览 / 全部记录 / 学生管理 / 系统管理
+│       ├── views/portal/         # 学生端：测评、记录、随访、消息、知识库、AI 助手、个人中心
+│       ├── views/admin/          # 管理端：概览、记录、学生、随访、知识库、日志、系统管理
 │       ├── views/login/          # 登录页 + 注册页（登录后按角色进入对应端）
 │       ├── permission.js         # 路由守卫
 │       └── utils/request.js      # Axios 封装（token 携带、统一响应）
+├── start.ps1 / stop.ps1         # Windows 启停脚本
+├── 启动系统.bat / 停止系统.bat   # Windows 双击入口
 └── README.md
 ```
 
@@ -75,9 +77,7 @@ mysql -uroot -p < sql/psy_test.sql
 ```
 
 或使用 Navicat / DataGrip 等工具执行 `sql/psy_test.sql`。
-4. 执行更新迁移：sql/migrations/20260929_ai_knowledge_and_cleanup.sql，用于创建心理知识库并清理测试量表。
-
-### 2. 启动后端（默认端口 8080，当前本机使用 8081）
+### 2. 启动后端（端口 8080）
 
 ```bash
 cd backend
@@ -91,7 +91,7 @@ mvn clean package -DskipTests
 java -jar target/psy-test.jar
 ```
 
-启动成功提示：`校园心理健康智能测评与随访系统后端启动成功，访问地址：http://localhost:8081`
+后端地址：`http://localhost:8080`；Knife4j 接口文档：`http://localhost:8080/doc.html`。
 
 ### 3. 启动前端（端口 8088）
 
@@ -107,10 +107,10 @@ npm run dev
 
 | 账号 | 角色 | 登录后进入 | 可访问功能 |
 |---|---|---|---|
-| `admin` | 系统管理员 | 管理端 `/admin` | 系统概览、全部测评记录、学生管理、系统管理（用户/量表/题目） |
-| `doctor` | 心理教师/辅导员 | 管理端 `/admin` | 系统概览、全部测评记录、学生管理 |
-| `user` | 学生用户 | 学生端 `/portal` | 工作台首页、心理测评（量表选择/答题/报告）、我的测评记录 |
-| 学号（示例 `Z2025725739`） | 学生用户 | 学生端 `/portal` | 使用学号登录，初始密码 `123456`。完整 44 个账号由 `20260929_student_accounts.sql` 导入。 |
+| `admin` | 系统管理员 | 管理端 `/admin` | 全部管理功能，包括用户、量表、题目、知识库和日志 |
+| `doctor` | 心理教师/辅导员 | 管理端 `/admin` | 概览、测评记录、学生、随访及知识库相关操作 |
+| `user` | 学生用户 | 学生端 `/portal` | 测评、个人记录、随访、消息、心理知识、AI 助手和个人中心 |
+| 学号（示例 `Z2025725739`） | 学生用户 | 学生端 `/portal` | 使用学号登录；示例账号及数据以 `sql/psy_test.sql` 为准。 |
 
 > 访问根路径 `/` 会自动进入学生端首页；登录页提供"立即注册"，学生用户可自助注册账号（自动分配 `user` 角色）；管理端页面仅限 admin/doctor 账号访问。
 
@@ -124,16 +124,23 @@ npm run dev
 | 心理测评 | SAS 焦虑 / SDS 抑郁 / SCL-90 症状 / SRSS 睡眠 四类量表在线作答，自动计分 |
 | 测评报告 | 粗分、标准分、结果等级（正常/轻/中/重度）+ 分级建议 + 答题明细 |
 | 我的测评记录 | 个人测评记录查询、报告查看、记录删除 |
+| 我的随访 | 查看随访计划、进度和处理结果 |
+| 消息中心 | 查看系统及心理教师发送的消息，支持未读提醒和已读标记 |
 | 心理知识库 | 按分类查看情绪、压力、睡眠、人际、危机支持等心理科普文章 |
 | AI 智能体 | 对接扣子（Coze）智能体；额度不足或服务不可用时自动切换本地心理陪伴模式 |
+| 个人中心 | 查看和维护个人资料、修改密码 |
 
 ### 管理端（`/admin`，系统管理员/心理教师/辅导员）
 | 模块 | 功能 |
 |---|---|
 | 系统概览 | 账号/测评/量表/学生档案统计卡片 + 量表分布、等级分布、近7天趋势图（ECharts） |
 | 测评记录 | 全部测评记录查询（按量表/等级/用户名筛选）、报告详情、删除 |
-| 学生管理 | 学生信息建档、查询、修改、删除 |
-| 系统管理 | 用户管理（增删改查、重置密码）、量表管理（启停用）、题目管理（反向计分标记） |
+| 学生管理 | 学生档案增删改查；与学生用户账号双向同步，支持恢复曾被逻辑删除的同名账号 |
+| 随访管理 | 通过学生和测评记录下拉选择建立随访，维护随访时间、状态和结果 |
+| 知识库 | 管理员和心理教师/辅导员均可查看、新增、修改和删除心理知识内容 |
+| 登录日志 | 管理员查看登录账号、IP、状态和时间等登录审计信息 |
+| 操作日志 | 管理员查看管理操作、请求方法、操作人员、状态和耗时等审计信息 |
+| 系统管理 | 管理员维护用户、量表和题目，并可重置用户密码 |
 
 ### 公共（登录认证）
 图片验证码 + 账号密码登录（BCrypt 加密）、用户自助注册、JWT 无状态令牌、路由守卫、按角色自动进入对应端。登录态存于浏览器会话（sessionStorage），**关闭浏览器后需重新登录**；登录页不预填账号密码。
@@ -188,7 +195,7 @@ coze:
 后端已集成 Knife4j（基于 Swagger / OpenAPI 的在线接口文档），启动后端后访问：
 
 ```
-http://localhost:8081/doc.html
+http://localhost:8080/doc.html
 ```
 
 **它是什么 / 有什么作用**：接口文档由后端代码**自动生成**，无需手写维护，集中展示本系统全部 HTTP 接口的地址、请求方法、请求参数、返回字段与示例，主要用于：
@@ -200,7 +207,7 @@ http://localhost:8081/doc.html
 
 **怎么用（三步）**：
 
-1. 启动后端（8080）后浏览器打开 `http://localhost:8081/doc.html`，左侧按 Controller 分组列出全部接口；
+1. 启动后端（8080）后浏览器打开 `http://localhost:8080/doc.html`，左侧按 Controller 分组列出全部接口；
 2. 调试需鉴权：先在 `login-controller` 分组里调用 `/login`（用户名 + 密码 + 图形验证码）拿到返回的 `token`；
 3. 点击文档页面右上角 **「Authorize / 调试」** 按钮，在 Authorization 输入框填写 `Bearer <token>`（注意 `Bearer` 后有空格），保存后即可在线调试其他接口。
 
@@ -240,9 +247,9 @@ http://localhost:8081/doc.html
 | 接口 | 方法 | 功能说明 |
 |---|---|---|
 | `/patient/list` | GET | 分页查询学生列表，支持按姓名/电话筛选 |
-| `/patient` | POST | 新增学生：创建学生档案（姓名/性别/年龄/电话），手机号需为 11 位 |
-| `/patient` | PUT | 修改学生：更新学生档案信息 |
-| `/patient/{patientId}` | DELETE | 删除学生：按学生 ID 删除档案 |
+| `/patient` | POST | 新增学生档案并同步创建或恢复对应学生账号 |
+| `/patient` | PUT | 修改学生档案并同步更新对应用户信息 |
+| `/patient/{patientId}` | DELETE | 删除学生档案并同步逻辑删除对应学生账号 |
 
 #### 6. question-controller — 题目管理（仅管理员）
 
@@ -280,7 +287,7 @@ http://localhost:8081/doc.html
 | `/system/user/roles` | GET | 角色列表：返回系统全部角色（用户管理页分配角色下拉框使用） |
 | `/system/user` | POST | 新增用户：创建账号（密码 BCrypt 加密，可分配角色） |
 | `/system/user` | PUT | 修改用户：更新昵称/性别/年龄/角色等 |
-| `/system/user/{userId}` | DELETE | 删除用户：按用户 ID 删除（不可删除超级管理员） |
+| `/system/user/{userId}` | DELETE | 逻辑删除用户并同步处理学生档案（不可删除超级管理员） |
 | `/system/user/resetPwd` | PUT | 重置密码：将指定用户密码重置为新值（BCrypt 加密） |
 
 #### 10. test-controller — 心理测评（学生用户答题端）
@@ -299,11 +306,38 @@ http://localhost:8081/doc.html
 | `/user/profile` | PUT | 修改个人资料：更新昵称/性别/年龄/手机号/头像（手机号 11 位正则校验） |
 | `/user/profile/updatePwd` | PUT | 修改登录密码：校验原密码后 BCrypt 加密新密码 |
 
+#### 12. follow-up-controller — 随访管理
+
+| 接口 | 方法 | 功能说明 |
+|---|---|---|
+| `/follow/admin/list` | GET | 管理端分页查询随访记录 |
+| `/follow/my` | GET | 学生查看本人的随访记录 |
+| `/follow/{id}` | GET | 查看随访详情 |
+| `/follow` | POST/PUT | 新增或修改随访记录 |
+| `/follow/finish` | PUT | 完成随访并记录处理结果 |
+| `/follow/{id}` | DELETE | 删除随访记录 |
+| `/follow/overdue` | GET | 查询逾期随访提醒 |
+
+#### 13. business-controller — 消息、知识库、诊断与日志
+
+| 接口 | 方法 | 功能说明 |
+|---|---|---|
+| `/business/message/my` | GET | 查询当前用户消息 |
+| `/business/message/read/{id}` | PUT | 将消息标记为已读 |
+| `/business/message/send` | POST | 管理端发送消息 |
+| `/business/knowledge/list` | GET | 查询心理知识列表 |
+| `/business/knowledge/{id}` | GET/DELETE | 查看或删除心理知识 |
+| `/business/knowledge` | POST/PUT | 新增或修改心理知识 |
+| `/business/record/diagnosis` | PUT | 更新测评记录的诊断意见 |
+| `/business/record/compare` | GET | 查询学生测评记录对比数据 |
+| `/business/log/oper` | GET | 管理员查询操作日志 |
+| `/business/log/login` | GET | 管理员查询登录日志 |
+
 ## 十、开发者协作
 
 ### 环境要求
 - JDK 8 / 11 / 17 任一版本 + Maven 3.6+
-- Node.js 14+（npm）
+- Node.js 18+（npm）
 - MySQL 5.7 / 8.0
 - 不需要 Redis（见"八、常见问题"）
 
@@ -336,7 +370,7 @@ cd frontend && npm install && npm run dev
 ### 参与开发
 1. **Fork** 本仓库到你的账号，clone 到本地
 2. 新建功能分支：`git checkout -b feat/your-feature`
-3. 开发并自测（后端 `mvn compile` / 前端 `npm run build:prod` 通过）
+3. 开发并自测（后端 `mvn test` / 前端 `npm run build` 通过）
 4. 提交（Commit 信息建议：`feat:` 新功能 / `fix:` 修复 / `docs:` 文档 / `refactor:` 重构）
 5. 推送分支并发起 **Pull Request**
 

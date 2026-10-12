@@ -1,5 +1,6 @@
 package com.psy.business.domain;
 
+import com.fasterxml.jackson.annotation.JsonProperty;
 import com.psy.common.core.BaseEntity;
 
 /**
@@ -40,6 +41,10 @@ public class Patient extends BaseEntity {
 
     /** 关联用户账号（联查） */
     private String username;
+
+    /** 新建学生账户时使用的初始密码（仅接收入参，不返回前端） */
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    private String password;
 
     public Long getPatientId() {
         return patientId;
@@ -127,5 +132,13 @@ public class Patient extends BaseEntity {
 
     public void setUsername(String username) {
         this.username = username;
+    }
+
+    public String getPassword() {
+        return password;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
     }
 }

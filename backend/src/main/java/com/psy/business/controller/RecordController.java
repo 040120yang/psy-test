@@ -4,6 +4,7 @@ import com.psy.business.domain.TestRecord;
 import com.psy.business.service.RecordService;
 import com.psy.common.core.AjaxResult;
 import com.psy.common.core.TableDataInfo;
+import com.psy.framework.aspectj.annotation.OperLog;
 import com.psy.system.controller.BaseController;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -48,6 +49,7 @@ public class RecordController extends BaseController {
     /**
      * 删除记录
      */
+    @OperLog(title = "测评记录", businessType = OperLog.DELETE)
     @DeleteMapping("/{recordId}")
     public AjaxResult remove(@PathVariable Long recordId) {
         return toAjax(recordService.remove(recordId));

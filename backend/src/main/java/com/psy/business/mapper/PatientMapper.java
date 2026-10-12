@@ -36,4 +36,7 @@ public interface PatientMapper {
     /** 删除学生 */
     @Delete("delete from psy_patient where patient_id = #{patientId}")
     int deletePatientById(@Param("patientId") Long patientId);
+
+    @Delete("delete from psy_patient where user_id = #{userId}")
+    int deletePatientByUserId(@Param("userId") Long userId);
 }

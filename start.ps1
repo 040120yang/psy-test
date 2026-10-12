@@ -45,13 +45,13 @@ if (-not (Test-ListeningPort 3306)) {
 if (-not (Wait-ListeningPort 3306 30)) { throw 'MySQL failed to start on port 3306.' }
 Save-PortPid 3306 (Join-Path $runtime 'mysql.pid')
 
-if (-not (Test-ListeningPort 8081)) {
-    Write-Host 'Starting backend on port 8081...'
+if (-not (Test-ListeningPort 8080)) {
+    Write-Host 'Starting backend on port 8080...'
     if (-not (Test-Path -LiteralPath $jar)) { throw "Backend jar not found: $jar" }
     Start-Process -FilePath $javaExe -ArgumentList @('-jar', $jar) -WorkingDirectory (Join-Path $root 'backend') -RedirectStandardOutput (Join-Path $runtime 'backend.out.log') -RedirectStandardError (Join-Path $runtime 'backend.err.log') -WindowStyle Hidden | Out-Null
 }
-if (-not (Wait-ListeningPort 8081 60)) { throw 'Backend failed to start. Check runtime\backend.out.log.' }
-Save-PortPid 8081 (Join-Path $runtime 'backend.pid')
+if (-not (Wait-ListeningPort 8080 60)) { throw 'Backend failed to start. Check runtime\backend.out.log.' }
+Save-PortPid 8080 (Join-Path $runtime 'backend.pid')
 
 if (-not (Test-ListeningPort 8088)) {
     Write-Host 'Starting frontend on port 8088...'

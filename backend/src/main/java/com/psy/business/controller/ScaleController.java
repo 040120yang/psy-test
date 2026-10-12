@@ -5,6 +5,7 @@ import com.psy.business.service.ScaleService;
 import com.psy.common.core.AjaxResult;
 import com.psy.common.core.TableDataInfo;
 import com.psy.common.exception.ServiceException;
+import com.psy.framework.aspectj.annotation.OperLog;
 import com.psy.framework.security.SecurityUtils;
 import com.psy.system.controller.BaseController;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +32,7 @@ public class ScaleController extends BaseController {
     /**
      * 新增量表
      */
+    @OperLog(title = "量表管理", businessType = OperLog.INSERT)
     @PostMapping
     public AjaxResult add(@RequestBody Scale scale) {
         requireAdmin();
@@ -40,6 +42,7 @@ public class ScaleController extends BaseController {
     /**
      * 修改量表
      */
+    @OperLog(title = "量表管理", businessType = OperLog.UPDATE)
     @PutMapping
     public AjaxResult edit(@RequestBody Scale scale) {
         requireAdmin();
@@ -49,6 +52,7 @@ public class ScaleController extends BaseController {
     /**
      * 删除量表
      */
+    @OperLog(title = "量表管理", businessType = OperLog.DELETE)
     @DeleteMapping("/{scaleId}")
     public AjaxResult remove(@PathVariable Long scaleId) {
         requireAdmin();

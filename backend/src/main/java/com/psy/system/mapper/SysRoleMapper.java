@@ -17,6 +17,10 @@ public interface SysRoleMapper {
     @Select("select * from sys_role where role_id = #{roleId}")
     SysRole selectRoleById(@Param("roleId") Long roleId);
 
+    /** 根据权限字符串查询角色 */
+    @Select("select * from sys_role where role_key = #{roleKey} limit 1")
+    SysRole selectRoleByKey(@Param("roleKey") String roleKey);
+
     /** 查询全部角色 */
     @Select("select * from sys_role order by sort_no")
     List<SysRole> selectRoleList();

@@ -1,5 +1,7 @@
 package com.psy.business.controller;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.psy.common.core.AjaxResult;
 import com.psy.common.utils.StringUtils;
 import com.psy.framework.security.SecurityUtils;
@@ -11,7 +13,9 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.HttpStatusCodeException;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.web.util.UriComponentsBuilder;
 
 import java.util.*;
@@ -33,7 +37,15 @@ public class CozeController {
     @Value("${coze.bot-id:}")
     private String botId;
 
-    private final RestTemplate restTemplate = new RestTemplate();
+    private final RestTemplate restTemplate = createRestTemplate();
+    private final ObjectMapper objectMapper = new ObjectMapper();
+
+    private static RestTemplate createRestTemplate() {
+        SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
+        factory.setConnectTimeout(10000);
+        factory.setReadTimeout(120000);
+        return new RestTemplate(factory);
+    }
 
     public static class ChatReq {
         public String message;
@@ -53,23 +65,22 @@ public class CozeController {
             return AjaxResult.error("消息内容不能为空");
         }
         if (StringUtils.isEmpty(apiToken) || StringUtils.isEmpty(botId)) {
-            return localResult(req.message, req.conversationId, req.history, req.mode);
+            String error = "Coze credentials are not configured; set COZE_API_TOKEN and COZE_BOT_ID";
+            log.warn(error);
+            return localResultWithCloudError(req, req.conversationId, error);
         }
         try {
             String userId = "psy-user-" + SecurityUtils.getUserId();
             Map<String, Object> chatBody = new HashMap<>();
             chatBody.put("bot_id", botId);
             chatBody.put("user_id", userId);
-            chatBody.put("stream", false);
+            chatBody.put("stream", true);
             chatBody.put("auto_save_history", true);
-            Map<String, Object> msg = new HashMap<>();
-            msg.put("role", "user");
-            msg.put("content", req.message);
-            msg.put("content_type", "text");
             chatBody.put("additional_messages", buildAdditionalMessages(req.message, req.history));
 
             HttpHeaders headers = new HttpHeaders();
             headers.setContentType(MediaType.APPLICATION_JSON);
+            headers.setAccept(Collections.singletonList(MediaType.TEXT_EVENT_STREAM));
             headers.set("Authorization", "Bearer " + apiToken);
 
             String chatUrl = COZE_BASE + "/chat";
@@ -78,75 +89,101 @@ public class CozeController {
                         .queryParam("conversation_id", req.conversationId).toUriString();
             }
 
-            ResponseEntity<Map> chatResp = restTemplate.exchange(
-                    chatUrl, HttpMethod.POST, new HttpEntity<>(chatBody, headers), Map.class);
-            Map chatBodyResult = chatResp.getBody();
-            Map chatData = chatBodyResult == null ? null : (Map) chatBodyResult.get("data");
-            if (chatBodyResult == null || !"0".equals(String.valueOf(chatBodyResult.get("code"))) || chatData == null) {
-                log.warn("Coze chat start failed: {}", chatBodyResult);
-                return localResult(req.message, req.conversationId, req.history, req.mode);
-            }
-
-            String chatId = String.valueOf(chatData.get("id"));
-            String conversationId = String.valueOf(chatData.get("conversation_id"));
-
-            boolean completed = false;
-            for (int i = 0; i < 30; i++) {
-                String retrieveUrl = UriComponentsBuilder.fromHttpUrl(COZE_BASE + "/chat/retrieve")
-                        .queryParam("conversation_id", conversationId)
-                        .queryParam("chat_id", chatId)
-                        .toUriString();
-                ResponseEntity<Map> retrieveResp = restTemplate.exchange(
-                        retrieveUrl, HttpMethod.GET, new HttpEntity<>(headers), Map.class);
-                Map retrieveBody = retrieveResp.getBody();
-                Map retrieveData = retrieveBody == null ? null : (Map) retrieveBody.get("data");
-                if (retrieveData != null && "completed".equals(retrieveData.get("status"))) {
-                    completed = true;
-                    break;
-                }
-                if (retrieveData != null && "failed".equals(retrieveData.get("status"))) {
-                    log.warn("Coze chat failed: {}", retrieveData.get("last_error"));
-                    return localResult(req.message, conversationId, req.history, req.mode);
-                }
-                Thread.sleep(700);
-            }
-            if (!completed) {
-                log.warn("Coze chat timeout, chatId={}", chatId);
-                return localResult(req.message, conversationId, req.history, req.mode);
-            }
-
-            String listUrl = UriComponentsBuilder.fromHttpUrl(COZE_BASE + "/chat/message/list")
-                    .queryParam("conversation_id", conversationId)
-                    .queryParam("chat_id", chatId)
-                    .toUriString();
-            ResponseEntity<Map> listResp = restTemplate.exchange(
-                    listUrl, HttpMethod.GET, new HttpEntity<>(headers), Map.class);
-            Map listBody = listResp.getBody();
-            List<Map> messages = listBody == null ? null : (List) listBody.get("data");
-            String reply = null;
-            if (messages != null) {
-                for (Map item : messages) {
-                    if ("assistant".equals(item.get("role")) && "answer".equals(item.get("type"))) {
-                        reply = String.valueOf(item.get("content"));
-                        break;
-                    }
-                }
-            }
-            if (StringUtils.isEmpty(reply)) {
-                return localResult(req.message, conversationId, req.history, req.mode);
+            ResponseEntity<String> chatResp = restTemplate.exchange(
+                    chatUrl, HttpMethod.POST, new HttpEntity<>(chatBody, headers), String.class);
+            CloudReply cloudReply = parseStream(chatResp.getBody(), req.conversationId);
+            if (StringUtils.isEmpty(cloudReply.reply)) {
+                String error = StringUtils.isEmpty(cloudReply.error)
+                        ? "Coze stream ended without an answer"
+                        : cloudReply.error;
+                log.warn("Coze chat returned no answer: {}", error);
+                return localResultWithCloudError(req, cloudReply.conversationId, error);
             }
             AjaxResult result = AjaxResult.success("ok");
-            result.put("reply", reply);
-            result.put("conversationId", conversationId);
+            result.put("reply", cloudReply.reply);
+            result.put("conversationId", cloudReply.conversationId);
             result.put("mode", "cloud");
             return result;
+        } catch (HttpStatusCodeException e) {
+            String error = "HTTP " + e.getRawStatusCode() + ": " + compactError(e.getResponseBodyAsString());
+            log.warn("Coze request failed: {}", error);
+            return localResultWithCloudError(req, req.conversationId, error);
         } catch (Exception e) {
-            log.warn("Coze service unavailable, using local assistant: {}", e.getMessage());
-            return localResult(req.message, req.conversationId, req.history, req.mode);
+            String error = e.getClass().getSimpleName() + ": " + compactError(e.getMessage());
+            log.warn("Coze service unavailable, using local assistant", e);
+            return localResultWithCloudError(req, req.conversationId, error);
         }
     }
 
-private java.util.List<Map<String, Object>> buildAdditionalMessages(String current, java.util.List<MessageItem> history) {
+    private CloudReply parseStream(String streamBody, String fallbackConversationId) throws Exception {
+        CloudReply result = new CloudReply();
+        result.conversationId = fallbackConversationId;
+        if (StringUtils.isEmpty(streamBody)) {
+            result.error = "empty response body";
+            return result;
+        }
+
+        StringBuilder answer = new StringBuilder();
+        String currentEvent = "";
+        for (String line : streamBody.split("\\r?\\n")) {
+            if (line.startsWith("event:")) {
+                currentEvent = line.substring(6).trim();
+                continue;
+            }
+            if (!line.startsWith("data:")) {
+                continue;
+            }
+            String data = line.substring(5).trim();
+            if (StringUtils.isEmpty(data) || "[DONE]".equals(data)) {
+                continue;
+            }
+
+            JsonNode payload = objectMapper.readTree(data);
+            JsonNode node = payload.has("data") && payload.get("data").isObject()
+                    ? payload.get("data") : payload;
+            if (node.hasNonNull("conversation_id")) {
+                result.conversationId = node.get("conversation_id").asText();
+            }
+
+            String content = node.path("content").asText("");
+            String role = node.path("role").asText("");
+            String type = node.path("type").asText("");
+            boolean isAnswerDelta = "conversation.message.delta".equals(currentEvent)
+                    && (StringUtils.isEmpty(type) || "answer".equals(type));
+            if (StringUtils.isNotEmpty(content)
+                    && (isAnswerDelta || ("assistant".equals(role) && "answer".equals(type)))) {
+                answer.append(content);
+            }
+
+            if (currentEvent.endsWith(".failed")) {
+                result.error = compactError(node.toString());
+            }
+        }
+        result.reply = answer.toString();
+        return result;
+    }
+
+    private AjaxResult localResultWithCloudError(ChatReq req, String conversationId, String error) {
+        AjaxResult result = localResult(req.message, conversationId, req.history, req.mode);
+        result.put("cloudError", compactError(error));
+        return result;
+    }
+
+    private String compactError(String error) {
+        if (StringUtils.isEmpty(error)) {
+            return "unknown error";
+        }
+        String compact = error.replaceAll("[\\r\\n]+", " ").trim();
+        return compact.length() > 800 ? compact.substring(0, 800) : compact;
+    }
+
+    private static class CloudReply {
+        private String reply;
+        private String conversationId;
+        private String error;
+    }
+
+    private java.util.List<Map<String, Object>> buildAdditionalMessages(String current, java.util.List<MessageItem> history) {
         java.util.List<Map<String, Object>> messages = new ArrayList<>();
         if (history != null) {
             int start = Math.max(0, history.size() - 8);
