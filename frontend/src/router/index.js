@@ -30,6 +30,9 @@ const adminRoutes = {
   meta: { roles: ['admin', 'doctor'] },
   children: [
     { path: 'dashboard', component: () => import('@/views/admin/dashboard.vue'), meta: { title: '系统概览', icon: 'DataAnalysis' } },
+    { path: 'workbench', component: () => import('@/views/admin/workbench.vue'), meta: { title: '待办工作台', icon: 'Tickets', roles: ['admin', 'doctor'] } },
+    { path: 'student-profile', component: () => import('@/views/admin/student-profile.vue'), meta: { title: '个案档案', hidden: true, roles: ['admin', 'doctor'] } },
+    { path: 'report-print', component: () => import('@/views/admin/report-print.vue'), meta: { title: '测评报告打印', hidden: true, roles: ['admin', 'doctor'] } },
     { path: 'records', component: () => import('@/views/admin/records.vue'), meta: { title: '测评记录', icon: 'Document' } },
     { path: 'patients', component: () => import('@/views/admin/patients.vue'), meta: { title: '学生管理', icon: 'User' } },
     { path: 'follow', component: () => import('@/views/admin/follow.vue'), meta: { title: '随访管理', icon: 'Bell' } },

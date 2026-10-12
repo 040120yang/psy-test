@@ -29,3 +29,8 @@ export function getChatUnread() {
 export function markChatRead(data) {
   return request({ url: '/chat/read', method: 'put', data })
 }
+
+/** 教师端：设置会话处理状态、置顶与备注 */
+export function updateConversation(data) {
+  return request({ url: '/chat/conversation', method: 'put', data })
+}

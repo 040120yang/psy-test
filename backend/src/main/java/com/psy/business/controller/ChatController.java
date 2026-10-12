@@ -34,6 +34,9 @@ public class ChatController {
     private static final String ROLE_STUDENT = "student";
     private static final String ROLE_TEACHER = "teacher";
 
+    /** 会话默认处理状态 */
+    private static final String STATUS_PENDING = "待处理";
+
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
@@ -69,17 +72,19 @@ public class ChatController {
            .append("(SELECT m.content FROM psy_chat_message m WHERE m.student_id = p.user_id ORDER BY m.id DESC LIMIT 1) AS lastMessage, ")
            .append("(SELECT m.sender_role FROM psy_chat_message m WHERE m.student_id = p.user_id ORDER BY m.id DESC LIMIT 1) AS lastSenderRole, ")
            .append("(SELECT m.create_time FROM psy_chat_message m WHERE m.student_id = p.user_id ORDER BY m.id DESC LIMIT 1) AS lastTime, ")
-           .append("(SELECT COUNT(*) FROM psy_chat_message m WHERE m.student_id = p.user_id AND m.sender_role = 'student' AND m.is_read = 0) AS unread ")
+           .append("(SELECT COUNT(*) FROM psy_chat_message m WHERE m.student_id = p.user_id AND m.sender_role = 'student' AND m.is_read = 0) AS unread, ")
+           .append("IFNULL(cv.status, '待处理') AS status, IFNULL(cv.pinned, 0) AS pinned, cv.remark AS remark ")
            .append("FROM psy_patient p ")
            .append("LEFT JOIN sys_user u ON p.user_id = u.user_id ")
            .append("LEFT JOIN sys_user tu ON p.teacher_id = tu.user_id ")
+           .append("LEFT JOIN psy_chat_conversation cv ON cv.student_id = p.user_id ")
            .append("WHERE p.user_id IS NOT NULL ");
         // 心理教师：仅自己负责的学生 + 待分配的会话；管理员：全部
         if (!SecurityUtils.isAdmin()) {
             sql.append("AND (p.teacher_id = ? OR p.teacher_id IS NULL) ");
             params.add(SecurityUtils.getUserId());
         }
-        sql.append("ORDER BY unread DESC, COALESCE(lastTime, p.create_time) DESC ");
+        sql.append("ORDER BY pinned DESC, unread DESC, COALESCE(lastTime, p.create_time) DESC ");
 
         List<Map<String, Object>> rows = jdbcTemplate.queryForList(sql.toString(), params.toArray());
         // 同一学生可能存在多条档案，按 studentId 去重（保留未读较多/较新的那条）
@@ -108,6 +113,43 @@ public class ChatController {
         data.put("student", student);
         data.put("messages", listMessages(studentId, null));
         return AjaxResult.success(data);
+    }
+
+    /**
+     * 教师端：设置会话处理状态（待处理/已处理/需转介）、置顶与备注
+     * 未传的字段保持原值，便于前端只提交变化项。
+     */
+    @PutMapping("/conversation")
+    public AjaxResult updateConversation(@RequestBody Map<String, Object> body) {
+        requireTeacher();
+        Object sid = body.get("studentId");
+        if (sid == null || StringUtils.isEmpty(sid.toString())) {
+            throw new ServiceException("请指定学生");
+        }
+        Long studentId = Long.valueOf(sid.toString().trim());
+        requireStudentAccess(studentId, findStudent(studentId));
+
+        List<Map<String, Object>> exist = jdbcTemplate.queryForList(
+                "SELECT status, pinned, remark FROM psy_chat_conversation WHERE student_id = ?", studentId);
+        Map<String, Object> current = exist.isEmpty() ? null : exist.get(0);
+
+        String status = body.get("status") != null ? body.get("status").toString().trim()
+                : (current == null ? STATUS_PENDING : String.valueOf(current.get("status")));
+        if (!STATUS_PENDING.equals(status) && !"已处理".equals(status) && !"需转介".equals(status)) {
+            throw new ServiceException("会话状态取值不正确，仅支持待处理/已处理/需转介");
+        }
+        String pinnedValue = body.get("pinned") == null ? null : body.get("pinned").toString();
+        int pinned = pinnedValue == null
+                ? (current == null ? 0 : ((Number) current.get("pinned")).intValue())
+                : ("1".equals(pinnedValue) || "true".equalsIgnoreCase(pinnedValue) ? 1 : 0);
+        String remark = body.get("remark") != null ? body.get("remark").toString()
+                : (current == null ? null : (String) current.get("remark"));
+
+        jdbcTemplate.update(
+                "INSERT INTO psy_chat_conversation (student_id, status, pinned, remark, update_by) VALUES (?, ?, ?, ?, ?) "
+                + "ON DUPLICATE KEY UPDATE status = VALUES(status), pinned = VALUES(pinned), remark = VALUES(remark), update_by = VALUES(update_by)",
+                studentId, status, pinned, remark, SecurityUtils.getUserId());
+        return AjaxResult.success("会话状态已更新");
     }
 
     // ==================== 公共 ====================
