@@ -2,6 +2,7 @@ package com.psy.business.service;
 
 import com.psy.business.domain.FollowUp;
 import com.psy.business.mapper.FollowUpMapper;
+import com.psy.common.core.PageUtils;
 import com.psy.common.core.TableDataInfo;
 import com.psy.framework.security.SecurityUtils;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -18,8 +19,9 @@ public class FollowUpService {
     private org.springframework.jdbc.core.JdbcTemplate jdbcTemplate;
 
     public TableDataInfo adminList(String status) {
+        PageUtils.startPage();
         List<FollowUp> list = followUpMapper.selectList(null, status);
-        return TableDataInfo.success(list, list.size());
+        return PageUtils.getDataTable(list);
     }
 
     public TableDataInfo myList() {

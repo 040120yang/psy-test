@@ -1,7 +1,10 @@
 <template>
   <div class="page-stack">
     <PageHeader eyebrow="Workbench" title="待办工作台" :description="scopeText">
-      <template #actions><el-button @click="load"><el-icon><Refresh /></el-icon> 刷新</el-button></template>
+      <template #actions>
+        <span class="live-badge" :class="{ ticking: refreshing }"><i></i>{{ lastUpdatedText }}</span>
+        <el-button @click="load"><el-icon><Refresh /></el-icon> 刷新</el-button>
+      </template>
     </PageHeader>
 
     <section class="soft-grid">
@@ -71,12 +74,15 @@
   </div>
 </template>
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter } from 'vue-router'
 import PageHeader from '@/components/PageHeader.vue'
 import StatCard from '@/components/StatCard.vue'
 import StatusTag from '@/components/StatusTag.vue'
 import { getWorkbench } from '@/api/dashboard'
+
+/** 实时刷新间隔（毫秒） */
+const REFRESH_INTERVAL = 10000
 
 const router = useRouter()
 const data = ref({})
@@ -86,14 +92,54 @@ const scopeText = computed(() => data.value.scope === 'all'
   ? '全局待办：待处理沟通、逾期随访与风险测评一览，点击学生可查看个案档案。'
   : '我的待办：仅统计我负责的学生（含尚未指派负责教师的学生），点击学生可查看个案档案。')
 
+// 实时刷新：轮询 + 窗口聚焦/页面可见时立即刷新，保证待处理沟通等数据无需手动刷新
+const refreshing = ref(false)
+const lastUpdated = ref(null)
+let timer = null
+let inFlight = false
+const lastUpdatedText = computed(() => {
+  if (refreshing.value) return '正在更新…'
+  if (!lastUpdated.value) return '实时更新'
+  const d = lastUpdated.value
+  const hh = String(d.getHours()).padStart(2, '0')
+  const mm = String(d.getMinutes()).padStart(2, '0')
+  const ss = String(d.getSeconds()).padStart(2, '0')
+  return `实时更新 · ${hh}:${mm}:${ss}`
+})
+
 async function load() {
-  const res = await getWorkbench()
-  data.value = res.data || {}
+  if (inFlight) return
+  inFlight = true
+  refreshing.value = true
+  try {
+    const res = await getWorkbench()
+    data.value = res.data || {}
+    lastUpdated.value = new Date()
+  } finally {
+    inFlight = false
+    refreshing.value = false
+  }
 }
+function onFocus() { load() }
+function onVisibility() { if (!document.hidden) load() }
+onMounted(() => {
+  load()
+  timer = setInterval(load, REFRESH_INTERVAL)
+  window.addEventListener('focus', onFocus)
+  document.addEventListener('visibilitychange', onVisibility)
+})
+onUnmounted(() => {
+  if (timer) clearInterval(timer)
+  window.removeEventListener('focus', onFocus)
+  document.removeEventListener('visibilitychange', onVisibility)
+})
 function go(path) { router.push(path) }
 function openProfile(studentId) { router.push({ path: '/admin/student-profile', query: { studentId } }) }
-onMounted(load)
 </script>
 <style scoped>
 .todo-empty{padding:28px 0;text-align:center;color:var(--text-3);font-size:13px}
+.live-badge{display:inline-flex;align-items:center;gap:6px;margin-right:10px;padding:5px 11px;border:1px solid #d9eee5;border-radius:999px;background:#f4fbf7;color:#36a269;font-size:12px;white-space:nowrap}
+.live-badge i{width:6px;height:6px;border-radius:50%;background:#36a269;box-shadow:0 0 0 3px rgba(54,162,105,.12)}
+.live-badge.ticking i{animation:live-pulse .9s ease-in-out infinite}
+@keyframes live-pulse{0%,100%{opacity:1}50%{opacity:.3}}
 </style>

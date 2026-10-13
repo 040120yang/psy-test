@@ -40,7 +40,7 @@ public class ChatController {
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
-    // ==================== 学生端 ====================
+    //  学生端
 
     /**
      * 学生端：获取我的会话（负责教师信息 + 消息列表）
@@ -57,7 +57,7 @@ public class ChatController {
         return AjaxResult.success(data);
     }
 
-    // ==================== 教师端 ====================
+    // 教师端
 
     /**
      * 教师端：我会话列表（含最后一条消息、未读数、是否待分配）
@@ -152,7 +152,7 @@ public class ChatController {
         return AjaxResult.success("会话状态已更新");
     }
 
-    // ==================== 公共 ====================
+    // 公共
 
     /**
      * 发送消息（学生端与教师端共用）
@@ -254,7 +254,7 @@ public class ChatController {
         return AjaxResult.success();
     }
 
-    // ==================== 内部方法 ====================
+    // 内部方法
 
     /** 查询学生的会话消息（按时间正序） */
     private List<Map<String, Object>> listMessages(Long studentId, Integer limit) {

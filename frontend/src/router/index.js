@@ -42,7 +42,8 @@ const adminRoutes = {
     { path: 'logs/oper', component: () => import('@/views/admin/log/oper.vue'), meta: { title: '操作日志', icon: 'List', roles: ['admin'] } },
     { path: 'system/user', component: () => import('@/views/admin/system/user.vue'), meta: { title: '用户管理', icon: 'UserFilled', roles: ['admin'] } },
     { path: 'system/scale', component: () => import('@/views/admin/system/scale.vue'), meta: { title: '量表管理', icon: 'Notebook', roles: ['admin'] } },
-    { path: 'system/question', component: () => import('@/views/admin/system/question.vue'), meta: { title: '题目管理', icon: 'Tickets', roles: ['admin'] } }
+    { path: 'system/question', component: () => import('@/views/admin/system/question.vue'), meta: { title: '题目管理', icon: 'Tickets', roles: ['admin'] } },
+    { path: 'system/backup', component: () => import('@/views/admin/system/backup.vue'), meta: { title: '数据备份', icon: 'FolderOpened', roles: ['admin'] } }
   ]
 }
 

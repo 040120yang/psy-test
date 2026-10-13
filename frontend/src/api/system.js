@@ -67,3 +67,35 @@ export function updateQuestion(data) {
 export function delQuestion(questionId) {
   return request({ url: '/system/question/' + questionId, method: 'delete' })
 }
+
+export function importQuestion(scaleId, mode, file) {
+  const formData = new FormData()
+  formData.append('scaleId', scaleId)
+  formData.append('mode', mode)
+  formData.append('file', file)
+  return request({ url: '/system/question/import', method: 'post', data: formData, headers: { 'Content-Type': 'multipart/form-data' } })
+}
+
+// ===== 学生账号批量维护 =====
+export function batchImportUser(file) {
+  const formData = new FormData()
+  formData.append('file', file)
+  return request({ url: '/system/user/batchImport', method: 'post', data: formData, headers: { 'Content-Type': 'multipart/form-data' } })
+}
+
+export function batchResetPwd(data) {
+  return request({ url: '/system/user/batchResetPwd', method: 'put', data })
+}
+
+export function batchAssignTeacher(data) {
+  return request({ url: '/system/user/batchAssignTeacher', method: 'put', data })
+}
+
+// ===== 数据备份与导出 =====
+export function listBackupTables() {
+  return request({ url: '/system/backup/tables', method: 'get' })
+}
+
+export function backupGuide() {
+  return request({ url: '/system/backup/guide', method: 'get' })
+}

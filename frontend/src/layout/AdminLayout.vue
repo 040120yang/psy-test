@@ -13,7 +13,7 @@
         <el-menu-item index="/admin/knowledge"><el-icon><Reading /></el-icon><template #title>知识库</template></el-menu-item>
         <template v-if="isAdmin">
           <div class="menu-caption">系统维护</div>
-          <el-sub-menu index="/admin/system"><template #title><el-icon><Setting /></el-icon><span>系统管理</span></template><el-menu-item index="/admin/system/user">用户管理</el-menu-item><el-menu-item index="/admin/system/scale">量表管理</el-menu-item><el-menu-item index="/admin/system/question">题目管理</el-menu-item></el-sub-menu>
+          <el-sub-menu index="/admin/system"><template #title><el-icon><Setting /></el-icon><span>系统管理</span></template><el-menu-item index="/admin/system/user">用户管理</el-menu-item><el-menu-item index="/admin/system/scale">量表管理</el-menu-item><el-menu-item index="/admin/system/question">题目管理</el-menu-item><el-menu-item index="/admin/system/backup">数据备份</el-menu-item></el-sub-menu>
           <el-sub-menu index="/admin/logs"><template #title><el-icon><List /></el-icon><span>日志管理</span></template><el-menu-item index="/admin/logs/login">登录日志</el-menu-item><el-menu-item index="/admin/logs/oper">操作日志</el-menu-item></el-sub-menu>
         </template>
       </el-menu>

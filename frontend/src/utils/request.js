@@ -14,7 +14,25 @@ service.interceptors.request.use(config => {
   return config
 }, error => Promise.reject(error))
 
-service.interceptors.response.use(response => {
+service.interceptors.response.use(async response => {
+  // 文件下载等二进制响应：直接返回 Blob，跳过业务状态码校验
+  if (response.config && response.config.responseType === 'blob') {
+    const data = response.data
+    const isJsonBlob = typeof Blob !== 'undefined' && data instanceof Blob
+      && data.type && data.type.indexOf('application/json') !== -1
+    // 后端以 JSON 返回了错误（blob 内容为 JSON）时，解析并提示
+    if (isJsonBlob) {
+      try {
+        const payload = JSON.parse(await data.text())
+        ElMessage.error(payload.msg || '请求失败')
+        return Promise.reject(new Error(payload.msg || '请求失败'))
+      } catch (e) {
+        // 非 JSON 或解析失败：按二进制原样返回
+      }
+    }
+    return data
+  }
+
   const res = response.data
   if (res.code === 200) return res
   if (res.code === 401) {

@@ -39,4 +39,7 @@ public interface PatientMapper {
 
     @Delete("delete from psy_patient where user_id = #{userId}")
     int deletePatientByUserId(@Param("userId") Long userId);
+
+    /** 批量分配负责教师（按学生用户ID列表） */
+    int batchAssignTeacher(@Param("userIds") List<Long> userIds, @Param("teacherId") Long teacherId);
 }

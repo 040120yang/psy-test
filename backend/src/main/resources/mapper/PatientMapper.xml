@@ -80,4 +80,12 @@
     <select id="selectPatientByUserId" resultMap="PatientResult">
         select * from psy_patient where user_id = #{userId} limit 1
     </select>
+
+    <update id="batchAssignTeacher">
+        update psy_patient set teacher_id = #{teacherId}
+        where user_id in
+        <foreach collection="userIds" item="uid" open="(" separator="," close=")">
+            #{uid}
+        </foreach>
+    </update>
 </mapper>

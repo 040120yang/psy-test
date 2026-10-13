@@ -24,4 +24,10 @@ public interface QuestionService {
 
     /** 删除题目 */
     int remove(Long questionId);
+
+    /** 导出一个量表下全部题目为 CSV 文本（表头 + 数据行） */
+    String exportCsv(Long scaleId);
+
+    /** 批量导入题目 CSV（覆盖或追加） */
+    int importCsv(Long scaleId, String csvText, boolean overwrite);
 }
