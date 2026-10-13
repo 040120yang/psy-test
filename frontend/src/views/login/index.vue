@@ -119,6 +119,7 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
+import { ElMessage } from 'element-plus'
 import { User, Lock, Key } from '@element-plus/icons-vue'
 import AppLogo from '@/components/AppLogo.vue'
 import { getCaptcha, login, getInfo } from '@/api/login'

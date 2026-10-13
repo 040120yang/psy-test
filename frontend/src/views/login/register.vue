@@ -91,6 +91,7 @@
 <script setup>
 import { ref, reactive } from 'vue'
 import { useRouter } from 'vue-router'
+import { ElMessage } from 'element-plus'
 import AppLogo from '@/components/AppLogo.vue'
 import { register } from '@/api/login'
 
