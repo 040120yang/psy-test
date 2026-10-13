@@ -30,6 +30,14 @@ export function getRecordDetail(recordId) {
   return request({ url: '/test/record/' + recordId, method: 'get' })
 }
 
+/** 根据当前用户有权访问的测评记录生成 AI 辅助解读 */
+export function generateReportInterpretation(recordId) {
+  return request({
+    url: '/coze/report/' + recordId,
+    method: 'post'
+  })
+}
+
 /** 删除记录 */
 export function delRecord(recordId) {
   return request({ url: '/test/record/' + recordId, method: 'delete' })

@@ -2,14 +2,18 @@ package com.psy.business.controller;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.psy.business.domain.TestRecord;
+import com.psy.business.service.RecordService;
 import com.psy.common.core.AjaxResult;
 import com.psy.common.utils.StringUtils;
 import com.psy.framework.security.SecurityUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -37,6 +41,9 @@ public class CozeController {
 
     @Value("${coze.bot-id:}")
     private String botId;
+
+    @Autowired
+    private RecordService recordService;
 
     private final RestTemplate restTemplate = createRestTemplate();
     private final ObjectMapper objectMapper = new ObjectMapper();
@@ -117,6 +124,51 @@ public class CozeController {
             log.warn("Coze service unavailable, using local assistant", e);
             return localResultWithCloudError(req, req.conversationId, error);
         }
+    }
+
+    /**
+     * 根据数据库中的真实测评结果生成 AI 辅助解读。
+     * 只发送必要的报告摘要，不发送姓名、账号或逐题答案。
+     */
+    @PostMapping("/report/{recordId}")
+    public AjaxResult interpretReport(@PathVariable Long recordId) {
+        TestRecord record = recordService.getAuthorizedRecord(recordId);
+        ChatReq req = new ChatReq();
+        req.message = buildReportPrompt(record);
+        req.mode = "advice";
+
+        AjaxResult result = chat(req);
+        if (!"cloud".equals(result.get("mode"))) {
+            return AjaxResult.error("AI 解读服务暂时不可用，请稍后重试或联系管理员检查配置");
+        }
+        result.remove("conversationId");
+        return result;
+    }
+
+    static String buildReportPrompt(TestRecord record) {
+        return "你是校园心理健康报告辅助解读助手。请根据下面的量表摘要，用简洁、温和的中文回答。\n"
+                + "要求：\n"
+                + "1. 依次输出“结果说明”“近期关注”“行动建议”“何时寻求帮助”四部分；\n"
+                + "2. 不作医学诊断，不推断确定病因，不提供药物建议；\n"
+                + "3. 不使用“你患有”“已经确诊”等确定性表述；\n"
+                + "4. 中度或重度结果应建议尽快联系心理教师或专业机构；\n"
+                + "5. 如提示可能存在紧急风险，应建议联系可信任的人并拨打 120、110 或心理援助热线 12356；\n"
+                + "6. 明确说明量表结果仅供筛查参考。\n\n"
+                + "<assessment>\n"
+                + "量表：" + safePromptValue(record.getScaleName()) + "\n"
+                + "量表编码：" + safePromptValue(record.getScaleCode()) + "\n"
+                + "原始分：" + safePromptValue(record.getRawScore()) + "\n"
+                + "标准分：" + safePromptValue(record.getStdScore()) + "\n"
+                + "结果等级：" + safePromptValue(record.getLevel()) + "\n"
+                + "系统建议：" + safePromptValue(record.getSuggestion()) + "\n"
+                + "</assessment>";
+    }
+
+    private static String safePromptValue(Object value) {
+        if (value == null) {
+            return "未提供";
+        }
+        return String.valueOf(value).replace("<", "＜").replace(">", "＞");
     }
 
     private CloudReply parseStream(String streamBody, String fallbackConversationId) throws Exception {

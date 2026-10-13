@@ -21,6 +21,9 @@ public interface RecordService {
     /** 记录详情（含答题明细） */
     Map<String, Object> detail(Long recordId);
 
+    /** 获取当前用户有权查看的测评记录 */
+    TestRecord getAuthorizedRecord(Long recordId);
+
     /** 删除记录 */
     int remove(Long recordId);
 }

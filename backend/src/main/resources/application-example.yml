@@ -52,8 +52,8 @@ token:
 # 访问令牌：https://www.coze.cn/open/oauth/pats 申请个人访问令牌（格式 pat_xxx）
 # 智能体ID：扣子智能体开发页 URL 中 bot 参数后的数字；发布时需勾选「API」
 coze:
-  api-token: "pat_8SaUCxwpaR6bMIHLC530yHnkTOTSCoWwO0Od6kDHcUqZEXLKmS1ifldchLh8BcEN"
-  bot-id: "7640438321206067234"
+  api-token: ${COZE_API_TOKEN:}
+  bot-id: ${COZE_BOT_ID:}
 
 logging:
   level:

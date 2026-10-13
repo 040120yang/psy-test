@@ -1,10 +1,14 @@
 package com.psy.business.controller;
 
+import com.psy.business.domain.TestRecord;
 import org.junit.jupiter.api.Test;
 
+import java.math.BigDecimal;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 class CozeControllerTest {
@@ -33,6 +37,28 @@ class CozeControllerTest {
 
         assertEquals("completed answer", field(reply, "reply"));
         assertEquals("conv-2", field(reply, "conversationId"));
+    }
+
+    @Test
+    void reportPromptContainsOnlyAssessmentSummaryAndSafetyRules() {
+        TestRecord record = new TestRecord();
+        record.setScaleName("焦虑自评量表");
+        record.setScaleCode("SAS");
+        record.setRawScore(52);
+        record.setStdScore(new BigDecimal("65.00"));
+        record.setLevel("中度焦虑");
+        record.setSuggestion("建议联系心理教师");
+        record.setNickname("不应发送的姓名");
+        record.setUsername("student-001");
+
+        String prompt = CozeController.buildReportPrompt(record);
+
+        assertTrue(prompt.contains("焦虑自评量表"));
+        assertTrue(prompt.contains("65.00"));
+        assertTrue(prompt.contains("不作医学诊断"));
+        assertTrue(prompt.contains("12356"));
+        assertFalse(prompt.contains("不应发送的姓名"));
+        assertFalse(prompt.contains("student-001"));
     }
 
     private Object parseStream(String stream) throws Exception {

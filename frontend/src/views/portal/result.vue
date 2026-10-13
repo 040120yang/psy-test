@@ -124,6 +124,7 @@
             type="primary"
             plain
             :loading="aiLoading"
+            :disabled="!record"
             @click="aiDiagnosis"
           >
             生成解读
@@ -215,8 +216,10 @@ import { useRoute } from 'vue-router'
 import PageHeader from '@/components/PageHeader.vue'
 import StatusTag from '@/components/StatusTag.vue'
 import EmptyPanel from '@/components/EmptyPanel.vue'
-import { getRecordDetail } from '@/api/test'
-import request from '@/utils/request'
+import {
+  generateReportInterpretation,
+  getRecordDetail
+} from '@/api/test'
 
 const route = useRoute()
 const loading = ref(true)
@@ -233,15 +236,11 @@ const isRisk = computed(
 )
 
 async function aiDiagnosis() {
+  if (!record.value?.recordId) return
   aiLoading.value = true
   try {
-    const prompt = `我刚完成了${record.value.scaleName}测评，标准分是${record.value.stdScore}，结果等级是${record.value.level}。请给出原因分析、生活建议和是否需要就医的提示，分点列出。`
-    const res = await request({
-      url: '/coze/chat',
-      method: 'post',
-      data: { message: prompt }
-    })
-    aiResult.value = res.reply || res.data || res.msg || '生成完成'
+    const res = await generateReportInterpretation(record.value.recordId)
+    aiResult.value = res.reply || 'AI 暂未返回解读内容'
   } finally {
     aiLoading.value = false
   }

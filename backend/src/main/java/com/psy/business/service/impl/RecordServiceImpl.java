@@ -48,19 +48,26 @@ public class RecordServiceImpl implements RecordService {
 
     @Override
     public Map<String, Object> detail(Long recordId) {
-        TestRecord record = recordMapper.selectRecordById(recordId);
-        if (record == null) {
-            throw new ServiceException("测评记录不存在");
-        }
-        // 权限：学生用户只能查看自己的记录
-        if (SecurityUtils.isUser() && !SecurityUtils.getUserId().equals(record.getUserId())) {
-            throw new ServiceException("无权限查看该记录");
-        }
+        TestRecord record = getAuthorizedRecord(recordId);
         List<TestAnswer> answers = answerMapper.selectByRecordId(recordId);
         Map<String, Object> result = new HashMap<>();
         result.put("record", record);
         result.put("answers", answers);
         return result;
+    }
+
+    @Override
+    public TestRecord getAuthorizedRecord(Long recordId) {
+        Long currentUserId = SecurityUtils.getUserId();
+        TestRecord record = recordMapper.selectRecordById(recordId);
+        if (record == null) {
+            throw new ServiceException("测评记录不存在");
+        }
+        // 权限：学生用户只能查看自己的记录
+        if (SecurityUtils.isUser() && !currentUserId.equals(record.getUserId())) {
+            throw new ServiceException("无权限查看该记录");
+        }
+        return record;
     }
 
     @Override

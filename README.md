@@ -180,15 +180,23 @@ npm run dev
 1. **获取访问令牌**：登录扣子开放平台 https://www.coze.cn/open/oauth/pats ，创建个人访问令牌（格式 `pat_xxx`）。
 2. **获取智能体 ID 并发布为 API**：在扣子 https://www.coze.cn 搭建智能体后点击"发布"，**勾选「API」**；开发页 URL 中 `bot` 参数后的数字即为智能体 ID。
 
-在 `backend/src/main/resources/application.yml` 填写：
+通过环境变量配置令牌和智能体 ID，令牌只保留在后端运行环境中：
+
+```powershell
+$env:COZE_API_TOKEN="pat_xxxxxxxx"
+$env:COZE_BOT_ID="7342xxxxxx"
+./start.ps1
+```
+
+`application.yml` 中只保留环境变量引用，禁止提交真实令牌：
 
 ```yaml
 coze:
-  api-token: "pat_xxxxxxxx"   # 你的个人访问令牌
-  bot-id: "7342xxxxxx"        # 你的智能体 ID
+  api-token: ${COZE_API_TOKEN:}
+  bot-id: ${COZE_BOT_ID:}
 ```
 
-保存后重启后端即可使用。若未配置、额度不足或云端调用失败，系统会自动切换本地心理陪伴回复，仍可正常对话。
+保存后重启后端即可使用。普通 AI 对话在未配置、额度不足或云端调用失败时会切换到本地心理陪伴回复；测评报告 AI 解读只接受真实云端结果，失败时会明确提示服务不可用。
 
 ### 在线接口文档（Knife4j）
 
@@ -226,6 +234,7 @@ http://localhost:8080/doc.html
 | 接口 | 方法 | 功能说明 |
 |---|---|---|
 | `/coze/chat` | POST | AI 智能体对话：向扣子（Coze）智能体发送消息并返回心理陪伴回复；携带 conversationId 可继续多轮对话，令牌仅存后端不暴露给前端 |
+| `/coze/report/{recordId}` | POST | AI 报告解读：后端校验记录访问权限并读取真实测评摘要，仅向 AI 发送量表、分数、等级和系统建议，不发送姓名、账号或逐题答案 |
 
 #### 3. dashboard-controller — 系统概览
 
