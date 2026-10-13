@@ -228,13 +228,13 @@ public class SysUserServiceImpl implements SysUserService {
         return s == null ? "" : s.trim();
     }
 
-    /** 性别文本归一：男/1/male → 1；女/0/female → 0；其余 → 2（未知） */
+    /** 性别文本归一：男/0/male → 0；女/1/female → 1；其余 → 2（未知）。数据库约定：0男 1女 2未知 */
     private String resolveSex(String text) {
-        if ("男".equals(text) || "1".equals(text) || "male".equalsIgnoreCase(text)) {
-            return "1";
-        }
-        if ("女".equals(text) || "0".equals(text) || "female".equalsIgnoreCase(text)) {
+        if ("男".equals(text) || "0".equals(text) || "male".equalsIgnoreCase(text)) {
             return "0";
+        }
+        if ("女".equals(text) || "1".equals(text) || "female".equalsIgnoreCase(text)) {
+            return "1";
         }
         return "2";
     }

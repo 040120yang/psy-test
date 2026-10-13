@@ -30,11 +30,32 @@
       <div class="panel-body">
         <el-table v-if="rows.length" :data="rows" stripe>
           <el-table-column
+            prop="username"
+            label="用户名"
+            min-width="140"
+            show-overflow-tooltip
+          />
+          <el-table-column
+            prop="nickname"
+            label="姓名"
+            min-width="120"
+            show-overflow-tooltip
+          />
+          <el-table-column label="性别" width="80" align="center">
+            <template #default="{ row }">
+              {{ row.sex === '0' ? '男' : row.sex === '1' ? '女' : '未知' }}
+            </template>
+          </el-table-column>
+          <el-table-column label="年龄" width="80" align="center">
+            <template #default="{ row }">
+              {{ row.age != null ? row.age : '-' }}
+            </template>
+          </el-table-column>
+          <el-table-column
             prop="followDate"
             label="随访日期"
             width="120"
           />
-          <el-table-column prop="userId" label="学生ID" width="90" />
           <el-table-column prop="followType" label="方式" width="90" />
           <el-table-column label="状态" width="110">
             <template #default="{ row }">

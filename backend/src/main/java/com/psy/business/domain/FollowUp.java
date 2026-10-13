@@ -24,6 +24,10 @@ public class FollowUp {
     // 联表字段
     private String username;
     private String nickname;
+    /** 性别（0男 1女 2未知） */
+    private String sex;
+    /** 年龄 */
+    private Integer age;
     private String scaleName;
     private String level;
 
@@ -53,6 +57,10 @@ public class FollowUp {
     public void setUsername(String username) { this.username = username; }
     public String getNickname() { return nickname; }
     public void setNickname(String nickname) { this.nickname = nickname; }
+    public String getSex() { return sex; }
+    public void setSex(String sex) { this.sex = sex; }
+    public Integer getAge() { return age; }
+    public void setAge(Integer age) { this.age = age; }
     public String getScaleName() { return scaleName; }
     public void setScaleName(String scaleName) { this.scaleName = scaleName; }
     public String getLevel() { return level; }
