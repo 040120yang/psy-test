@@ -32,9 +32,18 @@
         values (#{userId}, #{scaleId}, #{rawScore}, #{stdScore}, #{level}, #{suggestion}, #{status})
     </insert>
 
-    <select id="selectMyRecords" parameterType="Long" resultMap="TestRecordResult">
+    <select id="selectMyRecords" parameterType="com.psy.business.domain.TestRecord" resultMap="TestRecordResult">
         <include refid="selectRecordVo"/>
-        where tr.user_id = #{userId}
+        <where>
+            AND tr.user_id = #{record.userId}
+            <if test="record.scaleId != null">
+                AND tr.scale_id = #{record.scaleId}
+            </if>
+            <if test="record.scaleName != null and record.scaleName != ''">
+                AND (ps.scale_name like concat('%', #{record.scaleName}, '%')
+                     or ps.scale_code like concat('%', #{record.scaleName}, '%'))
+            </if>
+        </where>
         order by tr.create_time desc
     </select>
 

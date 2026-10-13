@@ -21,11 +21,11 @@
         <el-input
           v-model="query.scaleName"
           clearable
-          placeholder="按量表名称搜索"
+          placeholder="按量表名称/编码搜索"
           style="width: 240px"
-          @keyup.enter="load"
+          @keyup.enter="search"
         />
-        <el-button @click="load">查询</el-button>
+        <el-button @click="search">查询</el-button>
       </div>
 
       <div class="panel-body">
@@ -158,6 +158,12 @@ async function load() {
   const res = await listMyRecords(query)
   rows.value = res.rows || []
   total.value = res.total || rows.value.length
+}
+
+// 查询：重置到第 1 页后按量表名称筛选
+async function search() {
+  query.pageNum = 1
+  await load()
 }
 
 function open(row) {

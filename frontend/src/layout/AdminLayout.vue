@@ -14,7 +14,7 @@
         text-color="rgba(255,255,255,.72)"
         active-text-color="#fff"
       >
-        <el-menu-item index="/admin/workbench">
+        <el-menu-item v-if="isDoctor" index="/admin/workbench">
           <el-icon><Tickets /></el-icon>
           <template #title>待办工作台</template>
         </el-menu-item>
@@ -30,11 +30,11 @@
           <el-icon><User /></el-icon>
           <template #title>学生管理</template>
         </el-menu-item>
-        <el-menu-item index="/admin/follow">
+        <el-menu-item v-if="isDoctor" index="/admin/follow">
           <el-icon><Bell /></el-icon>
           <template #title>随访管理</template>
         </el-menu-item>
-        <el-menu-item index="/admin/chat">
+        <el-menu-item v-if="isDoctor" index="/admin/chat">
           <el-icon><ChatLineSquare /></el-icon>
           <template #title>
             沟通中心
@@ -155,6 +155,9 @@ const user = ref(getUser() || {})
 
 const isAdmin = computed(() => user.value.roles?.[0] === 'admin')
 
+// 待办工作台、随访管理、沟通中心为教师（医生）专属功能，管理员端不展示
+const isDoctor = computed(() => user.value.roles?.[0] === 'doctor')
+
 const initial = computed(() =>
   (user.value.nickname || user.value.username || '管').slice(0, 1)
 )
@@ -192,6 +195,8 @@ function onFocus() {
 }
 
 onMounted(() => {
+  // 沟通未读角标仅教师端需要
+  if (!isDoctor.value) return
   refreshChatUnread()
   timer = setInterval(refreshChatUnread, 20000)
   window.addEventListener('focus', onFocus)
@@ -199,7 +204,9 @@ onMounted(() => {
 
 watch(
   () => route.path,
-  () => refreshChatUnread()
+  () => {
+    if (isDoctor.value) refreshChatUnread()
+  }
 )
 
 onUnmounted(() => {
@@ -276,7 +283,7 @@ onUnmounted(() => {
   box-shadow: inset 3px 0 0 #76d1c8;
 }
 
-.admin-menu :deep(.el-sub-menu.is-active > .el-sub-menu__title) {
+.admin-menu :deep(.el-sub-menu.is-active  >.el-sub-menu__title) {
   color: #fff !important;
 }
 

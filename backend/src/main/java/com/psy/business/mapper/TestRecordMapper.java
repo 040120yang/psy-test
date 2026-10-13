@@ -25,8 +25,8 @@ public interface TestRecordMapper {
             "where tr.record_id = #{recordId}")
     TestRecord selectRecordById(@Param("recordId") Long recordId);
 
-    /** 我的测评记录（分页） */
-    List<TestRecord> selectMyRecords(@Param("userId") Long userId);
+    /** 我的测评记录（分页，可按量表名称/编码筛选） */
+    List<TestRecord> selectMyRecords(@Param("record") TestRecord record);
 
     /** 全部测评记录（分页，可按量表/等级/用户名筛选） */
     List<TestRecord> selectAllRecords(@Param("record") TestRecord record);

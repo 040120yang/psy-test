@@ -19,7 +19,8 @@ router.beforeEach((to) => {
     removeToken()
     return `/login?redirect=${encodeURIComponent(to.fullPath)}`
   }
-  const roles = to.matched.flatMap(item => item.meta?.roles || [])
+  // 取最深层级声明的 roles（子路由覆盖父路由），避免父级 roles 放宽子级限制
+  const roles = [...to.matched].reverse().find(item => item.meta?.roles)?.meta.roles || []
   const current = user.roles?.[0]
   if (roles.length && current && !roles.includes(current)) return '/'
   return true

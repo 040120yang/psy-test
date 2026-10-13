@@ -12,8 +12,8 @@ import java.util.Map;
  */
 public interface RecordService {
 
-    /** 当前用户的测评记录 */
-    TableDataInfo myRecords();
+    /** 当前用户的测评记录（可按量表名称/量表筛选） */
+    TableDataInfo myRecords(TestRecord record);
 
     /** 全部测评记录（管理端，可按条件筛选） */
     TableDataInfo allRecords(TestRecord record);

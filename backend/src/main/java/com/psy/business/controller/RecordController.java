@@ -22,11 +22,11 @@ public class RecordController extends BaseController {
     private RecordService recordService;
 
     /**
-     * 我的测评记录
+     * 我的测评记录（支持按量表名称/量表筛选）
      */
     @GetMapping("/my")
-    public TableDataInfo my() {
-        return recordService.myRecords();
+    public TableDataInfo my(TestRecord record) {
+        return recordService.myRecords(record);
     }
 
     /**

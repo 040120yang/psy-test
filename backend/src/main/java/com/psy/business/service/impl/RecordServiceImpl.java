@@ -29,10 +29,15 @@ public class RecordServiceImpl implements RecordService {
     private TestAnswerMapper answerMapper;
 
     @Override
-    public TableDataInfo myRecords() {
+    public TableDataInfo myRecords(TestRecord record) {
         Long userId = SecurityUtils.getUserId();
+        if (record == null) {
+            record = new TestRecord();
+        }
+        // 强制限定为当前登录用户，避免越权查询他人记录
+        record.setUserId(userId);
         PageUtils.startPage();
-        List<TestRecord> list = recordMapper.selectMyRecords(userId);
+        List<TestRecord> list = recordMapper.selectMyRecords(record);
         return PageUtils.getDataTable(list);
     }
 
