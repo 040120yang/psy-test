@@ -54,6 +54,11 @@ public class FollowUpService {
     }
 
     public int update(FollowUp followUp) {
+        // 「已逾期」是查询时按日期实时计算出的展示状态，并非持久化状态。
+        // 编辑表单回填后可能原样提交该值，此处统一归一为「待随访」，避免污染状态字段。
+        if ("已逾期".equals(followUp.getStatus())) {
+            followUp.setStatus("待随访");
+        }
         return followUpMapper.update(followUp);
     }
 

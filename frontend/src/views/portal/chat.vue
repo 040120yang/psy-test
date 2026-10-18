@@ -80,7 +80,7 @@
             <el-button
               type="primary"
               :loading="sending"
-              :disabled="!draft.trim()"
+              :disabled="sending"
               @click="send"
             >
               发送
@@ -164,7 +164,10 @@ async function load(manual) {
 
 async function send() {
   const content = draft.value.trim()
-  if (!content) return
+  if (!content) {
+    ElMessage.warning('消息内容不能为空')
+    return
+  }
   sending.value = true
   try {
     await sendChat({ content })

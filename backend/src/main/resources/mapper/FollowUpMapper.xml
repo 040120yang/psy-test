@@ -2,8 +2,14 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.psy.business.mapper.FollowUpMapper">
 
+    <!--
+        注意：此处不能使用 f.* 后再取别名为 status 的判定列。
+        MySQL 结果集中同名列会同时返回，MyBatis 按列名映射时取到第一个（即 f.status 原值），
+        导致「已逾期」判定被丢弃。因此显式列出基础字段，仅保留一个 status 列。
+    -->
     <select id="selectList" resultType="com.psy.business.domain.FollowUp">
-        SELECT f.*,
+        SELECT f.id, f.user_id, f.record_id, f.doctor_id, f.follow_date, f.follow_type,
+               f.symptom_score, f.doctor_note, f.next_follow_date, f.create_time,
                CASE WHEN f.status = '待随访' AND f.follow_date &lt; CURDATE() THEN '已逾期' ELSE f.status END as status,
                u.username, u.nickname, u.sex, u.age, s.scale_name, r.level
         FROM psy_follow_up f
@@ -24,7 +30,8 @@
     </select>
 
     <select id="selectById" resultType="com.psy.business.domain.FollowUp">
-        SELECT f.*,
+        SELECT f.id, f.user_id, f.record_id, f.doctor_id, f.follow_date, f.follow_type,
+               f.symptom_score, f.doctor_note, f.next_follow_date, f.create_time,
                CASE WHEN f.status = '待随访' AND f.follow_date &lt; CURDATE() THEN '已逾期' ELSE f.status END as status,
                u.username, u.nickname, u.sex, u.age, s.scale_name, r.level
         FROM psy_follow_up f
@@ -57,7 +64,10 @@
     </delete>
 
     <select id="selectOverdue" resultType="com.psy.business.domain.FollowUp">
-        SELECT f.*, u.username, u.nickname, u.sex, u.age, s.scale_name, r.level
+        SELECT f.id, f.user_id, f.record_id, f.doctor_id, f.follow_date, f.follow_type,
+               f.symptom_score, f.doctor_note, f.next_follow_date, f.create_time,
+               CASE WHEN f.status = '待随访' AND f.follow_date &lt; CURDATE() THEN '已逾期' ELSE f.status END as status,
+               u.username, u.nickname, u.sex, u.age, s.scale_name, r.level
         FROM psy_follow_up f
         LEFT JOIN sys_user u ON f.user_id = u.user_id
         LEFT JOIN psy_test_record r ON f.record_id = r.record_id

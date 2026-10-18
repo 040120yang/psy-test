@@ -180,7 +180,7 @@
               <el-button
                 type="primary"
                 :loading="sending"
-                :disabled="!draft.trim()"
+                :disabled="sending"
                 @click="send"
               >
                 发送
@@ -394,7 +394,11 @@ function openProfile() {
 
 async function send() {
   const content = draft.value.trim()
-  if (!content || !activeId.value) return
+  if (!activeId.value) return
+  if (!content) {
+    ElMessage.warning('消息内容不能为空')
+    return
+  }
   sending.value = true
   try {
     await sendChat({
