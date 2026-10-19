@@ -26,7 +26,7 @@
     </select>
 
     <select id="scaleDist" resultType="java.util.Map">
-        SELECT ps.scale_name AS name, COUNT(tr.record_id) AS value
+        SELECT IFNULL(ps.scale_name, '未知量表') AS name, COUNT(tr.record_id) AS value
         FROM psy_test_record tr
         LEFT JOIN psy_scale ps ON tr.scale_id = ps.scale_id
         GROUP BY tr.scale_id, ps.scale_name

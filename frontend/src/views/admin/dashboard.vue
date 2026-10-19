@@ -163,7 +163,8 @@ async function load() {
     grid: { left: 34, right: 16, top: 24, bottom: 36 },
     xAxis: {
       type: 'category',
-      data: scales.map(i => i.name),
+      data: scales.map(i => i.name || '未知量表'),
+      axisLabel: { interval: 0, fontSize: 12, color: '#4b5563' },
       axisLine: { lineStyle: { color: '#dbe3ec' } }
     },
     yAxis: {
