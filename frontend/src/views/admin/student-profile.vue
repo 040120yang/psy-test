@@ -268,7 +268,7 @@
                         ? '心理教师'
                         : '学生')
                     }} ·
-                    {{ m.createTime }}
+                    {{ fmtFull(m.createTime) }}
                   </div>
                   <div class="chat-bubble">{{ m.content }}</div>
                 </div>

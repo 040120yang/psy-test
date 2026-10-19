@@ -97,6 +97,7 @@
               prop="lastTime"
               label="时间"
               width="150"
+              :formatter="timeColumnFormatter"
             />
           </el-table>
           <div v-else class="todo-empty">暂无待处理沟通</div>
@@ -146,11 +147,6 @@
               prop="followType"
               label="方式"
               width="80"
-            />
-            <el-table-column
-              prop="status"
-              label="状态"
-              width="100"
             />
           </el-table>
           <div v-else class="todo-empty">暂无逾期随访</div>
@@ -213,6 +209,7 @@
               prop="createTime"
               label="测评时间"
               width="150"
+              :formatter="timeColumnFormatter"
             />
           </el-table>
           <div v-else class="todo-empty">
@@ -275,6 +272,7 @@
               prop="createTime"
               label="测评时间"
               width="150"
+              :formatter="timeColumnFormatter"
             />
           </el-table>
           <div v-else class="todo-empty">
@@ -293,6 +291,7 @@ import PageHeader from '@/components/PageHeader.vue'
 import StatCard from '@/components/StatCard.vue'
 import StatusTag from '@/components/StatusTag.vue'
 import { getWorkbench } from '@/api/dashboard'
+import { timeColumnFormatter } from '@/utils/format'
 
 /** 实时刷新间隔（毫秒） */
 const REFRESH_INTERVAL = 10000

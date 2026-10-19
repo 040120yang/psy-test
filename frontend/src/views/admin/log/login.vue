@@ -37,6 +37,7 @@
             width="180"
             align="center"
             header-align="center"
+            :formatter="timeColumnFormatter"
           />
         </el-table>
 
@@ -52,6 +53,7 @@ import PageHeader from '@/components/PageHeader.vue'
 import StatusTag from '@/components/StatusTag.vue'
 import EmptyPanel from '@/components/EmptyPanel.vue'
 import { listLoginLogs } from '@/api/business'
+import { timeColumnFormatter } from '@/utils/format'
 
 const rows = ref([])
 

@@ -46,6 +46,12 @@
         VALUES (#{userId}, #{recordId}, #{doctorId}, #{followDate}, #{followType}, #{status}, #{symptomScore}, #{doctorNote}, #{nextFollowDate})
     </insert>
 
+    <!-- 随访提醒消息：写入站内消息表，供学生端消息中心展示 -->
+    <insert id="insertNotice">
+        INSERT INTO psy_message (user_id, title, content, type)
+        VALUES (#{userId}, #{title}, #{content}, #{type})
+    </insert>
+
     <update id="update" parameterType="com.psy.business.domain.FollowUp">
         UPDATE psy_follow_up
         <set>
