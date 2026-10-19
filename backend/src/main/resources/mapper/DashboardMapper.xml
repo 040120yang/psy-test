@@ -1,0 +1,238 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.psy.business.mapper.DashboardMapper">
+
+
+    <!--概览统计 -->
+
+    <select id="countUser" resultType="int">
+        SELECT COUNT(1) FROM sys_user WHERE del_flag = '0'
+    </select>
+
+    <select id="countRecord" resultType="int">
+        SELECT COUNT(1) FROM psy_test_record
+    </select>
+
+    <select id="countScale" resultType="int">
+        SELECT COUNT(1) FROM psy_scale WHERE status = '0'
+    </select>
+
+    <select id="countPatient" resultType="int">
+        SELECT COUNT(1) FROM psy_patient
+    </select>
+
+    <select id="countToday" resultType="int">
+        SELECT COUNT(1) FROM psy_test_record WHERE DATE(create_time) = CURDATE()
+    </select>
+
+    <select id="scaleDist" resultType="java.util.Map">
+        SELECT ps.scale_name AS name, COUNT(tr.record_id) AS value
+        FROM psy_test_record tr
+        LEFT JOIN psy_scale ps ON tr.scale_id = ps.scale_id
+        GROUP BY tr.scale_id, ps.scale_name
+        ORDER BY value DESC
+    </select>
+
+    <select id="levelDist" resultType="java.util.Map">
+        SELECT IFNULL(tr.level, '未知') AS name, COUNT(1) AS value
+        FROM psy_test_record tr
+        GROUP BY tr.level
+        ORDER BY value DESC
+    </select>
+
+    <select id="weekTrend" resultType="java.util.Map">
+        SELECT DATE(create_time) AS day, COUNT(1) AS value
+        FROM psy_test_record
+        WHERE create_time &gt;= DATE_SUB(CURDATE(), INTERVAL 6 DAY)
+        GROUP BY DATE(create_time)
+        ORDER BY day
+    </select>
+
+    <select id="followTotal" resultType="int">
+        SELECT COUNT(1) FROM psy_follow_up
+    </select>
+
+    <select id="followDone" resultType="int">
+        SELECT COUNT(1) FROM psy_follow_up WHERE status = '已完成'
+    </select>
+
+    <select id="followOverdue" resultType="int">
+        SELECT COUNT(1) FROM psy_follow_up WHERE status = '待随访' AND follow_date &lt; CURDATE()
+    </select>
+
+    <select id="tagDist" resultType="java.util.Map">
+        SELECT IFNULL(tag, '未分类') AS name, COUNT(1) AS value
+        FROM psy_patient
+        GROUP BY tag
+    </select>
+
+    <!-- ==================== 待办：待处理沟通 ==================== -->
+
+    <select id="countPendingChat" resultType="int">
+        SELECT COUNT(1)
+        FROM psy_chat_message c
+        WHERE c.sender_role = 'student'
+          AND c.is_read = 0
+        <if test="teacherId != null">
+            AND c.student_id IN (
+                SELECT p.user_id FROM psy_patient p
+                WHERE p.user_id IS NOT NULL
+                  AND (p.teacher_id = #{teacherId} OR p.teacher_id IS NULL)
+            )
+        </if>
+    </select>
+
+    <select id="selectPendingChat" resultType="java.util.Map">
+        SELECT g.studentId,
+               g.unread,
+               g.lastTime,
+               u.nickname AS studentName,
+               u.username AS studentUsername,
+               (SELECT m.content FROM psy_chat_message m
+                WHERE m.student_id = g.studentId
+                ORDER BY m.id DESC LIMIT 1) AS lastContent
+        FROM (
+            SELECT c.student_id AS studentId,
+                   COUNT(*) AS unread,
+                   MAX(c.create_time) AS lastTime
+            FROM psy_chat_message c
+            WHERE c.sender_role = 'student'
+              AND c.is_read = 0
+            GROUP BY c.student_id
+        ) g
+        LEFT JOIN sys_user u ON g.studentId = u.user_id
+        WHERE 1 = 1
+        <if test="teacherId != null">
+            AND g.studentId IN (
+                SELECT p.user_id FROM psy_patient p
+                WHERE p.user_id IS NOT NULL
+                  AND (p.teacher_id = #{teacherId} OR p.teacher_id IS NULL)
+            )
+        </if>
+        ORDER BY g.lastTime DESC
+        LIMIT #{limit}
+    </select>
+
+    <!-- ==================== 待办：逾期随访 ==================== -->
+
+    <select id="countOverdueFollow" resultType="int">
+        SELECT COUNT(1)
+        FROM psy_follow_up f
+        WHERE f.status != '已完成'
+          AND f.follow_date &lt; CURDATE()
+        <if test="teacherId != null">
+            AND f.user_id IN (
+                SELECT p.user_id FROM psy_patient p
+                WHERE p.user_id IS NOT NULL
+                  AND (p.teacher_id = #{teacherId} OR p.teacher_id IS NULL)
+            )
+        </if>
+    </select>
+
+    <select id="selectOverdueFollow" resultType="java.util.Map">
+        SELECT f.id,
+               f.user_id AS userId,
+               f.record_id AS recordId,
+               f.follow_date AS followDate,
+               f.follow_type AS followType,
+               f.status,
+               u.nickname AS studentName,
+               u.username AS studentUsername
+        FROM psy_follow_up f
+        LEFT JOIN sys_user u ON f.user_id = u.user_id
+        WHERE f.status != '已完成'
+          AND f.follow_date &lt; CURDATE()
+        <if test="teacherId != null">
+            AND f.user_id IN (
+                SELECT p.user_id FROM psy_patient p
+                WHERE p.user_id IS NOT NULL
+                  AND (p.teacher_id = #{teacherId} OR p.teacher_id IS NULL)
+            )
+        </if>
+        ORDER BY f.follow_date ASC
+        LIMIT #{limit}
+    </select>
+
+    <!-- ==================== 待办：待填写评估结论 ==================== -->
+
+    <select id="countPendingEvaluation" resultType="int">
+        SELECT COUNT(1)
+        FROM psy_test_record tr
+        WHERE (tr.doctor_conclusion IS NULL OR tr.doctor_conclusion = '')
+          AND (tr.level LIKE '%中度%' OR tr.level LIKE '%重度%')
+        <if test="teacherId != null">
+            AND tr.user_id IN (
+                SELECT p.user_id FROM psy_patient p
+                WHERE p.user_id IS NOT NULL
+                  AND (p.teacher_id = #{teacherId} OR p.teacher_id IS NULL)
+            )
+        </if>
+    </select>
+
+    <select id="selectPendingEvaluation" resultType="java.util.Map">
+        SELECT tr.record_id AS recordId,
+               tr.user_id AS userId,
+               tr.level,
+               tr.std_score AS stdScore,
+               tr.create_time AS createTime,
+               ps.scale_name AS scaleName,
+               u.nickname AS studentName,
+               u.username AS studentUsername
+        FROM psy_test_record tr
+        LEFT JOIN psy_scale ps ON tr.scale_id = ps.scale_id
+        LEFT JOIN sys_user u ON tr.user_id = u.user_id
+        WHERE (tr.doctor_conclusion IS NULL OR tr.doctor_conclusion = '')
+          AND (tr.level LIKE '%中度%' OR tr.level LIKE '%重度%')
+        <if test="teacherId != null">
+            AND tr.user_id IN (
+                SELECT p.user_id FROM psy_patient p
+                WHERE p.user_id IS NOT NULL
+                  AND (p.teacher_id = #{teacherId} OR p.teacher_id IS NULL)
+            )
+        </if>
+        ORDER BY tr.create_time DESC
+        LIMIT #{limit}
+    </select>
+
+    <!-- ==================== 待办：本周新增中/重度 ==================== -->
+
+    <select id="countWeekRisk" resultType="int">
+        SELECT COUNT(1)
+        FROM psy_test_record tr
+        WHERE (tr.level LIKE '%中度%' OR tr.level LIKE '%重度%')
+          AND tr.create_time &gt;= #{weekStart}
+        <if test="teacherId != null">
+            AND tr.user_id IN (
+                SELECT p.user_id FROM psy_patient p
+                WHERE p.user_id IS NOT NULL
+                  AND (p.teacher_id = #{teacherId} OR p.teacher_id IS NULL)
+            )
+        </if>
+    </select>
+
+    <select id="selectWeekRisk" resultType="java.util.Map">
+        SELECT tr.record_id AS recordId,
+               tr.user_id AS userId,
+               tr.level,
+               tr.std_score AS stdScore,
+               tr.create_time AS createTime,
+               ps.scale_name AS scaleName,
+               u.nickname AS studentName,
+               u.username AS studentUsername
+        FROM psy_test_record tr
+        LEFT JOIN psy_scale ps ON tr.scale_id = ps.scale_id
+        LEFT JOIN sys_user u ON tr.user_id = u.user_id
+        WHERE (tr.level LIKE '%中度%' OR tr.level LIKE '%重度%')
+          AND tr.create_time &gt;= #{weekStart}
+        <if test="teacherId != null">
+            AND tr.user_id IN (
+                SELECT p.user_id FROM psy_patient p
+                WHERE p.user_id IS NOT NULL
+                  AND (p.teacher_id = #{teacherId} OR p.teacher_id IS NULL)
+            )
+        </if>
+        ORDER BY tr.create_time DESC
+        LIMIT #{limit}
+    </select>
+
+</mapper>

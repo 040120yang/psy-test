@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.psy.business.mapper.ChatMapper">
+
+    <!-- 教师端会话列表：teacherId 为空表示管理员，可见全部会话 -->
+    <select id="selectConversations" resultType="java.util.Map">
+        SELECT p.user_id AS studentId,
+               u.nickname AS studentName,
+               u.username AS studentUsername,
+               p.teacher_id AS teacherId,
+               tu.nickname AS teacherName,
+               (SELECT m.content FROM psy_chat_message m
+                WHERE m.student_id = p.user_id ORDER BY m.id DESC LIMIT 1) AS lastMessage,
+               (SELECT m.sender_role FROM psy_chat_message m
+                WHERE m.student_id = p.user_id ORDER BY m.id DESC LIMIT 1) AS lastSenderRole,
+               (SELECT m.create_time FROM psy_chat_message m
+                WHERE m.student_id = p.user_id ORDER BY m.id DESC LIMIT 1) AS lastTime,
+               (SELECT COUNT(*) FROM psy_chat_message m
+                WHERE m.student_id = p.user_id
+                  AND m.sender_role = 'student'
+                  AND m.is_read = 0) AS unread,
+               IFNULL(cv.status, '待处理') AS status,
+               IFNULL(cv.pinned, 0) AS pinned,
+               cv.remark AS remark
+        FROM psy_patient p
+        LEFT JOIN sys_user u ON p.user_id = u.user_id
+        LEFT JOIN sys_user tu ON p.teacher_id = tu.user_id
+        LEFT JOIN psy_chat_conversation cv ON cv.student_id = p.user_id
+        WHERE p.user_id IS NOT NULL
+        <if test="teacherId != null">
+            AND (p.teacher_id = #{teacherId} OR p.teacher_id IS NULL)
+        </if>
+        ORDER BY pinned DESC, unread DESC, COALESCE(lastTime, p.create_time) DESC
+    </select>
+
+    <!-- 学生负责教师 -->
+    <select id="selectTeacher" resultType="java.util.Map">
+        SELECT p.teacher_id AS teacherId,
+               COALESCE(NULLIF(tu.nickname, ''), tu.username) AS teacherName
+        FROM psy_patient p
+        LEFT JOIN sys_user tu ON p.teacher_id = tu.user_id
+        WHERE p.user_id = #{studentId}
+        LIMIT 1
+    </select>
+
+    <!-- 学生基本信息与负责教师 -->
+    <select id="selectStudent" resultType="java.util.Map">
+        SELECT p.user_id AS studentId,
+               u.nickname AS studentName,
+               u.username AS studentUsername,
+               p.teacher_id AS teacherId,
+               COALESCE(NULLIF(tu.nickname, ''), tu.username) AS teacherName
+        FROM psy_patient p
+        LEFT JOIN sys_user u ON p.user_id = u.user_id
+        LEFT JOIN sys_user tu ON p.teacher_id = tu.user_id
+        WHERE p.user_id = #{studentId}
+        LIMIT 1
+    </select>
+
+    <!-- 会话消息（正序） -->
+    <select id="selectMessages" resultType="java.util.Map">
+        SELECT c.id,
+               c.student_id AS studentId,
+               c.sender_id AS senderId,
+               c.sender_role AS senderRole,
+               c.content,
+               c.is_read AS isRead,
+               c.create_time AS createTime,
+               COALESCE(NULLIF(u.nickname, ''), u.username) AS senderName
+        FROM psy_chat_message c
+        LEFT JOIN sys_user u ON c.sender_id = u.user_id
+        WHERE c.student_id = #{studentId}
+        ORDER BY c.id ASC
+        LIMIT #{limit}
+    </select>
+
+    <!-- 发送消息 -->
+    <insert id="insertMessage">
+        INSERT INTO psy_chat_message (student_id, sender_id, sender_role, content, is_read)
+        VALUES (#{studentId}, #{senderId}, #{senderRole}, #{content}, 0)
+    </insert>
+
+    <!-- 回复即接手：把学生负责教师更新为当前教师 -->
+    <update id="updateStudentTeacher">
+        UPDATE psy_patient SET teacher_id = #{teacherId} WHERE user_id = #{studentId}
+    </update>
+
+    <!-- 学生端标记已读 -->
+    <update id="markReadForStudent">
+        UPDATE psy_chat_message
+        SET is_read = 1
+        WHERE student_id = #{studentId}
+          AND sender_role = 'teacher'
+          AND is_read = 0
+    </update>
+
+    <!-- 教师端标记已读 -->
+    <update id="markReadForTeacher">
+        UPDATE psy_chat_message
+        SET is_read = 1
+        WHERE student_id = #{studentId}
+          AND sender_role = 'student'
+          AND is_read = 0
+    </update>
+
+    <!-- 学生未读数 -->
+    <select id="countUnreadForStudent" resultType="int">
+        SELECT COUNT(*) FROM psy_chat_message
+        WHERE student_id = #{studentId}
+          AND sender_role = 'teacher'
+          AND is_read = 0
+    </select>
+
+    <!-- 教师未读数：仅负责范围内（含未分配） -->
+    <select id="countUnreadForTeacher" resultType="int">
+        SELECT COUNT(*)
+        FROM psy_chat_message c
+        JOIN psy_patient p ON c.student_id = p.user_id
+        WHERE c.sender_role = 'student'
+          AND c.is_read = 0
+          AND (p.teacher_id = #{teacherId} OR p.teacher_id IS NULL)
+    </select>
+
+    <!-- 管理员未读数：全局 -->
+    <select id="countUnreadForAdmin" resultType="int">
+        SELECT COUNT(*)
+        FROM psy_chat_message c
+        JOIN psy_patient p ON c.student_id = p.user_id
+        WHERE c.sender_role = 'student'
+          AND c.is_read = 0
+    </select>
+
+    <!-- 会话状态 -->
+    <select id="selectConversation"  resultType="java.util.Map">
+        SELECT status, pinned, remark
+        FROM psy_chat_conversation
+        WHERE student_id = #{studentId}
+    </select>
+
+    <!-- 会话状态保存：存在即更新，避免先查后写在并发下产生重复主键 -->
+    <insert id="saveConversation">
+        INSERT INTO psy_chat_conversation (student_id, status, pinned, remark, update_by)
+        VALUES (#{studentId}, #{status}, #{pinned}, #{remark}, #{updateBy})
+        ON DUPLICATE KEY UPDATE
+            status = VALUES(status),
+            pinned = VALUES(pinned),
+            remark = VALUES(remark),
+            update_by = VALUES(update_by)
+    </insert>
+
+</mapper>

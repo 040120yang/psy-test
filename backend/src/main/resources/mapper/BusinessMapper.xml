@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.psy.business.mapper.BusinessMapper">
+
+    <!-- ==================== 消息中心 ==================== -->
+
+    <!-- 学生可见消息：本人消息与全局广播（user_id 为空） -->
+    <select id="selectMyMessages" resultType="com.psy.business.domain.Message">
+        SELECT id,
+               user_id     AS userId,
+               title,
+               content,
+               type,
+               is_read     AS isRead,
+               create_time AS createTime
+        FROM psy_message
+        WHERE user_id = #{userId} OR user_id IS NULL
+        ORDER BY create_time DESC
+    </select>
+
+    <update id="markMessageRead">
+        UPDATE psy_message SET is_read = 1 WHERE id = #{id}
+    </update>
+
+    <select id="countUnreadMessages" resultType="int">
+        SELECT COUNT(*)
+        FROM psy_message
+        WHERE (user_id = #{userId} OR user_id IS NULL)
+          AND is_read = 0
+    </select>
+
+    <!-- 下发消息与评估结果通知共用 -->
+    <insert id="insertMessage" parameterType="com.psy.business.domain.Message">
+        INSERT INTO psy_message (user_id, title, content, type)
+        VALUES (#{userId}, #{title}, #{content}, #{type})
+    </insert>
+
+    <!-- ==================== 心理知识库 ==================== -->
+
+    <!-- 文章列表：仅返回已发布文章 -->
+    <select id="selectKnowledgeList" resultType="com.psy.business.domain.Knowledge">
+        SELECT id, title, category, summary, content, author,
+               view_count AS viewCount, status, create_time AS createTime
+        FROM psy_knowledge
+        WHERE status = 1
+        <if test="category != null and category != ''">
+            AND category = #{category}
+        </if>
+        ORDER BY create_time DESC
+    </select>
+
+    <!-- 文章详情：不校验发布状态，由业务层按角色判断 -->
+    <select id="selectKnowledgeById" resultType="com.psy.business.domain.Knowledge">
+        SELECT id, title, category, summary, content, author,
+               view_count AS viewCount, status, create_time AS createTime
+        FROM psy_knowledge
+        WHERE id = #{id}
+    </select>
+
+    <update id="increaseKnowledgeView">
+        UPDATE psy_knowledge SET view_count = view_count + 1 WHERE id = #{id}
+    </update>
+
+    <!-- 新增文章：发布状态与浏览量取表默认值 -->
+    <insert id="insertKnowledge" parameterType="com.psy.business.domain.Knowledge">
+        INSERT INTO psy_knowledge (title, category, summary, content, author)
+        VALUES (#{title}, #{category}, #{summary}, #{content}, #{author})
+    </insert>
+
+    <update id="updateKnowledge" parameterType="com.psy.business.domain.Knowledge">
+        UPDATE psy_knowledge
+        SET title    = #{title},
+            category = #{category},
+            summary  = #{summary},
+            content  = #{content}
+        WHERE id = #{id}
+    </update>
+
+    <delete id="deleteKnowledge">
+        DELETE FROM psy_knowledge WHERE id = #{id}
+    </delete>
+
+    <!-- ==================== 心理评估 ==================== -->
+
+    <!-- 反查记录归属人，确保评估意见推送给正确的学生 -->
+    <select id="selectRecordOwner" resultType="java.util.Map">
+        SELECT record_id AS recordId, user_id AS userId
+        FROM psy_test_record
+        WHERE record_id = #{recordId}
+        LIMIT 1
+    </select>
+
+    <update id="updateDiagnosis">
+        UPDATE psy_test_record
+        SET doctor_conclusion = #{conclusion},
+            doctor_advice     = #{advice}
+        WHERE record_id = #{recordId}
+    </update>
+
+    <!-- ==================== 历史对比 ==================== -->
+
+    <select id="selectCompareHistory" resultType="java.util.Map">
+        SELECT r.record_id  AS recordId,
+               s.scale_name AS scaleName,
+               s.scale_code AS scaleCode,
+               r.std_score  AS stdScore,
+               r.level,
+               r.create_time AS createTime
+        FROM psy_test_record r
+        LEFT JOIN psy_scale s ON r.scale_id = s.scale_id
+        WHERE r.user_id = #{userId}
+        ORDER BY r.create_time DESC
+        LIMIT #{limit}
+    </select>
+
+    <!-- ==================== 系统日志 ==================== -->
+
+    <select id="selectOperLog" resultType="java.util.Map">
+        SELECT oper_id       AS operId,
+               title,
+               business_type AS businessType,
+               oper_name     AS operName,
+               oper_url      AS operUrl,
+               oper_ip       AS operIp,
+               status,
+               error_msg     AS errorMsg,
+               oper_time     AS operTime
+        FROM sys_oper_log
+        ORDER BY oper_time DESC
+        LIMIT #{limit}
+    </select>
+
+    <select id="selectLoginLog" resultType="java.util.Map">
+        SELECT info_id    AS infoId,
+               user_name  AS userName,
+               ipaddr,
+               status,
+               msg,
+               login_time AS loginTime
+        FROM sys_login_log
+        ORDER BY login_time DESC
+        LIMIT #{limit}
+    </select>
+
+</mapper>
